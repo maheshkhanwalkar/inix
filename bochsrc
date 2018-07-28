@@ -1,0 +1,7 @@
+ata0-slave: type=cdrom, path=inix.iso, status=inserted
+boot: cdrom
+memory: guest=512, host=512
+
+display_library: x, options="gui_debug"
+magic_break: enabled=1
+

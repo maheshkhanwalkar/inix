@@ -1,6 +1,6 @@
 CC = x86_64-elf-gcc
 
-CFLAGS =-O2 -ffreestanding -mcmodel=kernel -mno-red-zone -mno-mmx -mno-sse -mno-sse2
+CFLAGS =-Wall -Wextra -Werror -O2 -ffreestanding -mcmodel=kernel -mno-red-zone -mno-mmx -mno-sse -mno-sse2
 OBJS = arch/amd64/boot.o
 
 .PHONY=clean,iso
