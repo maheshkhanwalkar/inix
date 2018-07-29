@@ -17,6 +17,16 @@ SECTIONS
         *(.bstrapL)
     }
 
+    .paging ALIGN(4K):
+    {
+        *(.paging)
+    }
+
+    .bstack ALIGN(16):
+    {
+        *(.bstack)
+    }
+
     . += KERNEL_VMA;
 
     .bstrapH ALIGN(4K): AT(ADDR(.bstrapH) - KERNEL_VMA)
