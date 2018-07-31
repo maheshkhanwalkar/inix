@@ -42,14 +42,14 @@ _setup_paging:
 
 _enable_paging:
 
-    # CR3 = PML4
-    movl $pml4, %eax
-    movl %eax, %cr3
-
     # CR4.PAE = 1
     movl %cr4, %eax
     orl $0x20, %eax
     movl %eax, %cr4
+
+    # CR3 = PML4
+    movl $pml4, %eax
+    movl %eax, %cr3
 
     # IA32_EFER.LME = 1
     movl $0xC0000080, %ecx

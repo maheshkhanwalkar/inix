@@ -22,6 +22,11 @@ SECTIONS
         *(.paging)
     }
 
+    .gdt ALIGN(8):
+    {
+        *(.gdt)
+    }
+
     .bstack ALIGN(16):
     {
         *(.bstack)
