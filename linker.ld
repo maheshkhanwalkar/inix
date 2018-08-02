@@ -5,7 +5,9 @@ ENTRY(_low_init)
 SECTIONS
 {
     . = 1M;
-    KERNEL_VMA = 0xFFFFFFFF80000000;
+
+    _kernel_start = .;
+    _kernel_vma = 0xFFFFFFFF80000000;
 
     .multiboot ALIGN(4K):
     {
@@ -32,31 +34,38 @@ SECTIONS
         *(.bstack)
     }
 
-    . += KERNEL_VMA;
+    . += _kernel_vma;
 
-    .bstrapH ALIGN(4K): AT(ADDR(.bstrapH) - KERNEL_VMA)
+    .bstrapH ALIGN(4K): AT(ADDR(.bstrapH) - _kernel_vma)
     {
         *(.bstrapH)
     }
 
-    .text ALIGN(4K): AT(ADDR(.text) - KERNEL_VMA)
+    .text ALIGN(4K): AT(ADDR(.text) - _kernel_vma)
     {
         *(.text)
     }
 
-    .rodata ALIGN(4K): AT(ADDR(.rodata) - KERNEL_VMA)
+    .rodata ALIGN(4K): AT(ADDR(.rodata) - _kernel_vma)
     {
         *(.rodata)
     }
 
-    .data ALIGN(4K): AT(ADDR(.data) - KERNEL_VMA)
+    .data ALIGN(4K): AT(ADDR(.data) - _kernel_vma)
     {
         *(.data)
     }
 
-    .bss ALIGN(4K): AT(ADDR(.bss) - KERNEL_VMA)
+    .bss ALIGN(4K): AT(ADDR(.bss) - _kernel_vma)
     {
         *(COMMON)
         *(.bss)
     }
+
+    .hstack ALIGN(16): AT(ADDR(.hstack) - _kernel_vma)
+    {
+        *(.hstack)
+    }
+
+    _kernel_end = . - _kernel_vma;
 }

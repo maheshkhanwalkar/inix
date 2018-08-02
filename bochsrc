@@ -3,5 +3,6 @@ boot: cdrom
 memory: guest=512, host=512
 
 display_library: x, options="gui_debug"
+port_e9_hack: enabled=1
 magic_break: enabled=1
 

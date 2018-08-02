@@ -20,6 +20,9 @@
 _low_init:
     # Setup bootstrap stack
     movl $bstack_top, %esp
+
+    # Save pointer (64 bit LSB)
+    pushl $0
     pushl %ebx
 
     # Setup 4-table paging
@@ -45,16 +48,51 @@ bstack_top:
 .globl _jmp_target
 
 _jmp_target:
-    # TODO setup DS, SS, ES, GS, and FS registers
-    # TODO setup a new higher-half stack
+    movw $0x10, %ax
+    movw %ax, %ds
+    movw %ax, %ss
+    movw %ax, %es
+    movw %ax, %gs
+    movw %ax, %fs
+
+    popq %rax
+
+    # Setup new stack
+    movq $hstack_top, %rsp
+    pushq %rax
+
+    # Jump to higher-half
     jmp _high_init
 
 .section .bstrapH,"ax",@progbits
 .globl _high_init
 
 _high_init:
+    # Fix pointer
+    popq %rax
+    addq $_kernel_vma, %rax
+
+    # Parse GRUB multiboot info
+    pushq $_kernel_vma
+    pushq $_kernel_end
+    pushq $_kernel_start
+    pushq %rax
+
+    movq %rsp, %rdi
+    callq parse_multiboot
+
+    # Fix stack
+    addq $32, %rsp
+    movq %rax, %rdi
+
     xchgw %bx, %bx
+    callq kernel_main
 
     cli
     hlt
 
+
+.section .hstack,"aw",@progbits
+hstack_bottom:
+.skip 16384
+hstack_top:
