@@ -68,6 +68,11 @@ _jmp_target:
 .globl _high_init
 
 _high_init:
+    # Unmap lower half
+    movq $pdL, %rax
+    movq $0, (%rax)
+    invlpg 0
+
     # Fix pointer
     popq %rax
     addq $_kernel_vma, %rax

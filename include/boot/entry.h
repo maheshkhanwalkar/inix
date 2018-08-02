@@ -17,7 +17,6 @@ struct mem_entry
 
     enum mem_entry_type type;
     uint32_t native_type;
-
 };
 
 struct initrd_entry

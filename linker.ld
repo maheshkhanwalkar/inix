@@ -67,5 +67,10 @@ SECTIONS
         *(.hstack)
     }
 
+    /DISCARD/ :
+    {
+        *(.comment)
+    }
+
     _kernel_end = . - _kernel_vma;
 }

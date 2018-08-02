@@ -24,6 +24,11 @@ static inline bool contains_kernel(struct mem_info* m_info,
         curr->addr + curr->len > m_info->kernel_start;
 }
 
+static inline void* fix_addr(void* addr, uint64_t kernel_vma)
+{
+    return (char*)addr + kernel_vma;
+}
+
 struct boot_info* parse_multiboot(struct mem_info* m_info)
 {
     struct multiboot_info* info = m_info->info;
@@ -37,7 +42,7 @@ struct boot_info* parse_multiboot(struct mem_info* m_info)
         return NULL;
 
     // Extract memory map
-    struct multiboot_mmap_entry* map = (void*)info->mmap_addr;
+    struct multiboot_mmap_entry* map = fix_addr((void*)info->mmap_addr, m_info->kernel_vma);
     size_t map_len = info->mmap_length / sizeof(struct multiboot_mmap_entry);
 
     if(map_len > 15)
@@ -103,13 +108,13 @@ struct boot_info* parse_multiboot(struct mem_info* m_info)
     }
 
     // Extract initrd information
-    struct multiboot_mod_list* m_list = (struct multiboot_mod_list*)info->mods_addr;
+    struct multiboot_mod_list* m_list = fix_addr((void*)info->mods_addr, m_info->kernel_vma);
 
     initrd.start_addr = (char*)m_list->mod_start + m_info->kernel_vma;
     initrd.length = m_list->mod_end - m_list->mod_start;
 
     size_t e_count = extra ? map_len + 1 : map_len;
-    char* k_args = (char*)info->cmdline + m_info->kernel_vma;
+    char* k_args = fix_addr((void*)info->cmdline, m_info->kernel_vma);
 
     b_info.entries = entries;
     b_info.e_count = e_count;
