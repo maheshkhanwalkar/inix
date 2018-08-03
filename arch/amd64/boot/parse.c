@@ -2,7 +2,9 @@
 #include <stdbool.h>
 
 #include <arch/amd64/include/multiboot.h>
+
 #include <include/boot/entry.h>
+#include <include/libk/string.h>
 
 // Kernel memory information
 struct mem_info
@@ -16,6 +18,7 @@ struct mem_info
 struct mem_entry entries[16];
 struct initrd_entry initrd;
 struct boot_info b_info;
+char k_args[128];
 
 static inline bool contains_kernel(struct mem_info* m_info,
         struct multiboot_mmap_entry* curr)
@@ -114,7 +117,14 @@ struct boot_info* parse_multiboot(struct mem_info* m_info)
     initrd.length = m_list->mod_end - m_list->mod_start;
 
     size_t e_count = extra ? map_len + 1 : map_len;
-    char* k_args = fix_addr((void*)info->cmdline, m_info->kernel_vma);
+
+    // Extract k_args
+    char* raw = fix_addr((void*)info->cmdline, m_info->kernel_vma);
+
+    size_t cmd_len = strlen(raw);
+    size_t amt = cmd_len > sizeof(k_args) ? sizeof(k_args) : cmd_len;
+
+    strncpy(k_args, raw, amt);
 
     b_info.entries = entries;
     b_info.e_count = e_count;

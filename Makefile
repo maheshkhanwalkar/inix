@@ -1,13 +1,13 @@
 CC = x86_64-elf-gcc
 
 CFLAGS =-Wall -Wextra -Werror -O2 -ffreestanding -mcmodel=kernel \
-		-mno-red-zone -mno-mmx -mno-sse -mno-sse2 \
+		-mno-red-zone \
 		-Wno-int-to-pointer-cast \
 		-fno-asynchronous-unwind-tables \
 		-I .
 
-OBJS = arch/amd64/init/boot.o arch/amd64/init/paging.o arch/amd64/init/gdt.o \
-		arch/amd64/init/parse.o kernel/kernel.o
+OBJS = arch/amd64/boot/boot.o arch/amd64/boot/paging.o arch/amd64/boot/gdt.o \
+		arch/amd64/boot/parse.o arch/amd64/boot/sse.o kernel/kernel.o libk/string.o
 
 .PHONY=clean,iso
 

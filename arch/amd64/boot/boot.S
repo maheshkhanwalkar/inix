@@ -68,34 +68,50 @@ _jmp_target:
 .globl _high_init
 
 _high_init:
-    # Unmap lower half
+    # Disable interrupts
+    cli
+
+    # Unmap the lower half
+    callq _unmap_lower
+
+    # Enable SSE support
+    callq _enable_sse
+
+    # Parse the multiboot info
+    popq %rdi
+    callq _setup_parse
+
+    # Enter kernel_main()
+    xchgw %bx, %bx
+
+    movq %rax, %rdi
+    callq kernel_main
+
+    cli
+    hlt
+
+_unmap_lower:
     movq $pdL, %rax
     movq $0, (%rax)
     invlpg 0
+    retq
 
+_setup_parse:
     # Fix pointer
-    popq %rax
-    addq $_kernel_vma, %rax
+    addq $_kernel_vma, %rdi
 
     # Parse GRUB multiboot info
     pushq $_kernel_vma
     pushq $_kernel_end
     pushq $_kernel_start
-    pushq %rax
+    pushq %rdi
 
     movq %rsp, %rdi
     callq parse_multiboot
 
     # Fix stack
     addq $32, %rsp
-    movq %rax, %rdi
-
-    xchgw %bx, %bx
-    callq kernel_main
-
-    cli
-    hlt
-
+    retq
 
 .section .hstack,"aw",@progbits
 hstack_bottom:
