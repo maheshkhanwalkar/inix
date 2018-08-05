@@ -1,11 +1,13 @@
 #-----------------------------------------------------------------------------#
-# Build configuration (modify here)                                           #
+# Build configuration (modify this section only)                              #
+#-----------------------------------------------------------------------------#
 
 ARCH := x86_64
 FMT := elf
 
 #-----------------------------------------------------------------------------#
 # Source variable setup                                                       #
+#-----------------------------------------------------------------------------#
 
 SRC_DIRS := arch/$(ARCH) kernel libk
 
@@ -17,27 +19,44 @@ OBJS += $(patsubst %.S, %.o, $(ASM_SRC))
 
 #-----------------------------------------------------------------------------#
 # Toolchain setup                                                             #
+#-----------------------------------------------------------------------------#
 
 CC := $(ARCH)-$(FMT)-gcc
 CFLAGS := -Wall -Wextra -O2 -ffreestanding -Wno-int-to-pointer-cast -I .
 include arch/$(ARCH)/Tconfig
 
 #-----------------------------------------------------------------------------#
+# Pretty output                                                               #
+#-----------------------------------------------------------------------------#
+
+%.o: %.c
+	@$(CC) $(CFLAGS) -c -o $@ $<
+	@echo "(CC) $<"
+
+%.o: %.S
+	@$(CC) -c -o $@ $<
+	@echo "(AS) $<"
+
+#-----------------------------------------------------------------------------#
 # Makefile targets                                                            #
+#-----------------------------------------------------------------------------#
 
 .PHONY=all,clean
 
 all: vminix
 
 vminix: $(OBJS)
-	$(CC) $(VMINIX_LD) -ffreestanding -T arch/$(ARCH)/linker.ld $(OBJS) \
+	@$(CC) $(VMINIX_LD) -ffreestanding -T arch/$(ARCH)/linker.ld $(OBJS) \
 		-o vminix -nostdlib -lgcc
+	@echo "(LINK) vminix"
 
 clean:
-	rm -f $(OBJS) vminix
+	@rm -f $(OBJS) vminix
+	@echo "(CLEAN) vminix"
 
 #-----------------------------------------------------------------------------#
 # Extra Makefile targets                                                      #
+#-----------------------------------------------------------------------------#
 
 include arch/$(ARCH)/Econfig
 
