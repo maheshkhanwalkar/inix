@@ -1,22 +1,44 @@
-CC = x86_64-elf-gcc
+#-----------------------------------------------------------------------------#
+# Build configuration (modify here)                                           #
 
-CFLAGS =-Wall -Wextra -Werror -O2 -ffreestanding -mcmodel=kernel \
-		-mno-red-zone \
-		-Wno-int-to-pointer-cast \
-		-fno-asynchronous-unwind-tables \
-		-I .
+ARCH := x86_64
+FMT := elf
 
-OBJS = arch/amd64/boot/boot.o arch/amd64/boot/paging.o arch/amd64/boot/gdt.o \
-		arch/amd64/boot/parse.o arch/amd64/boot/sse.o kernel/kernel.o libk/string.o
+#-----------------------------------------------------------------------------#
+# Source variable setup                                                       #
 
-.PHONY=clean,iso
+SRC_DIRS := arch/$(ARCH) kernel libk
+
+C_SRC := $(shell find $(SRC_DIRS) -type f -name "*.c")
+ASM_SRC := $(shell find $(SRC_DIRS) -type f -name "*.S")
+
+OBJS := $(patsubst %.c, %.o, $(C_SRC))
+OBJS += $(patsubst %.S, %.o, $(ASM_SRC))
+
+#-----------------------------------------------------------------------------#
+# Toolchain setup                                                             #
+
+CC := $(ARCH)-$(FMT)-gcc
+CFLAGS := -Wall -Wextra -O2 -ffreestanding -Wno-int-to-pointer-cast -I .
+include arch/$(ARCH)/Tconfig
+
+#-----------------------------------------------------------------------------#
+# Makefile targets                                                            #
+
+.PHONY=all,clean
+
+all: vminix
 
 vminix: $(OBJS)
-	$(CC) -z max-page-size=0x1000 -ffreestanding -T linker.ld $(OBJS) -o vminix -nostdlib -lgcc
-
-iso: vminix
-	cp vminix isodir/boot/vminix
-	grub2-mkrescue -o inix.iso isodir
+	$(CC) $(VMINIX_LD) -ffreestanding -T arch/$(ARCH)/linker.ld $(OBJS) \
+		-o vminix -nostdlib -lgcc
 
 clean:
-	rm -f $(OBJS) vminix inix.iso
+	rm -f $(OBJS) vminix
+
+#-----------------------------------------------------------------------------#
+# Extra Makefile targets                                                      #
+
+include arch/$(ARCH)/Econfig
+
+#-----------------------------------------------------------------------------#

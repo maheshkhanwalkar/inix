@@ -1,0 +1,7 @@
+# Extra arch-specific targets
+
+.PHONY += iso
+
+iso: vminix
+	cp vminix isodir/boot/vminix
+	grub2-mkrescue -o inix.iso isodir

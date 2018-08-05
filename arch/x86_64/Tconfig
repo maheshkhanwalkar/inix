@@ -1,0 +1,7 @@
+
+# Arch-specific CFLAGS
+CFLAGS += -mcmodel=kernel -mno-red-zone -fno-asynchronous-unwind-tables \
+            -mno-sse -mno-sse2 -mno-mmx -mno-3dnow
+
+VMINIX_LD := -z max-page-size=0x1000
+

@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include <arch/amd64/include/multiboot.h>
+#include <arch/x86_64/include/multiboot.h>
 
 #include <include/boot/entry.h>
 #include <include/libk/string.h>
