@@ -52,7 +52,7 @@ vminix: $(OBJS)
 
 clean:
 	@rm -f $(OBJS) vminix
-	@echo "(CLEAN) vminix"
+	@echo "(CLEAN)"
 
 #-----------------------------------------------------------------------------#
 # Extra Makefile targets                                                      #

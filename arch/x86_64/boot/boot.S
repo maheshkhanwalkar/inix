@@ -82,8 +82,6 @@ _high_init:
     callq _setup_parse
 
     # Enter kernel_main()
-    xchgw %bx, %bx
-
     movq %rax, %rdi
     callq kernel_main
 
