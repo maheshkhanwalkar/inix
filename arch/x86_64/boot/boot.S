@@ -78,12 +78,18 @@ _high_init:
     callq _enable_sse
 
     # Parse the multiboot info
-    popq %rdi
-    callq _setup_parse
+    #popq %rdi
+    #callq _setup_parse
+
+    # Initialize allocator
+    #movq %rax, %rdi
+    #callq phys_init
 
     # Enter kernel_main()
-    movq %rax, %rdi
     callq kernel_main
+
+    #movq %rax, %rdi
+    #callq kernel_main
 
     cli
     hlt
@@ -94,22 +100,22 @@ _unmap_lower:
     invlpg 0
     retq
 
-_setup_parse:
+#_setup_parse:
     # Fix pointer
-    addq $_kernel_vma, %rdi
+    #addq $_kernel_vma, %rdi
 
     # Parse GRUB multiboot info
-    pushq $_kernel_vma
-    pushq $_kernel_end
-    pushq $_kernel_start
-    pushq %rdi
+    #pushq $_kernel_vma
+    #pushq $_kernel_end
+    #pushq $_kernel_start
+    #pushq %rdi
 
-    movq %rsp, %rdi
-    callq parse_multiboot
+    #movq %rsp, %rdi
+    #callq parse_multiboot
 
     # Fix stack
-    addq $32, %rsp
-    retq
+    #addq $32, %rsp
+    #retq
 
 .section .hstack,"aw",@progbits
 hstack_bottom:
