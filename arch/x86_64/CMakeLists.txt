@@ -1,4 +1,7 @@
 
+# Executable format
+set(BUILD_FMT "elf" PARENT_SCOPE)
+
 # x86_64-specific CFLAGS
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mcmodel=kernel -mno-red-zone \
     -fno-asynchronous-unwind-tables \
