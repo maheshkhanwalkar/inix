@@ -5,7 +5,7 @@ project(vminix C ASM)
 # Build configuration                                                         #
 #-----------------------------------------------------------------------------#
 
-set(BUILD_ARCH "x86_64" CACHE FILEPATH "Target architecture")
+set(BUILD_ARCH "x86_64" CACHE STRING "Target architecture")
 
 #-----------------------------------------------------------------------------#
 # Toolchain setup                                                             #
@@ -21,11 +21,13 @@ set(CMAKE_C_COMPILER "${BUILD_ARCH}-${BUILD_FMT}-gcc")
 set(CMAKE_ASM_COMPILER "${CMAKE_C_COMPILER}")
 
 set(CMAKE_C_FLAGS "-Wall -Wextra -Werror -O2 -ffreestanding\
-        -Wno-int-to-pointer-cast -I .")
+        -Wno-int-to-pointer-cast")
 
 set(CMAKE_EXE_LINKER_FLAGS "-ffreestanding \
     -T ${CMAKE_SOURCE_DIR}/arch/${BUILD_ARCH}/linker.ld \
     ${VMINIX_ARCH_LDFLAGS} -nostdlib")
+
+include_directories(.)
 
 add_executable(vminix "${SRCS}")
 target_link_libraries(vminix gcc)
