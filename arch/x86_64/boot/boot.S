@@ -77,9 +77,23 @@ _high_init:
     # Enable SSE support
     callq _enable_sse
 
+	# Initialize physical allocator
+	popq %rdi
+	addq $kernel_vma, %rdi
+
+	movq $kernel_vma, %rsi
+	movq $kernel_start, %rdx
+	movq $kernel_end, %rcx
+
+	callq phys_init
+
+	cmpq $0, %rax
+	je .hang
+
     # Enter kernel_main()
     callq kernel_main
 
+.hang:
     cli
     hlt
 

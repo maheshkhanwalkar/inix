@@ -1,8 +1,10 @@
-*.o
-isodir/
-vminix
-inix.iso
-bx_enh_dbg.ini
-.idea
-cmake-build-debug
-cmake-build-release
+# CMake output
+cmake-build-debug/
+cmake-build-release/
+
+# Debugging tools
+tools/
+
+# CLion config
+.idea/
+

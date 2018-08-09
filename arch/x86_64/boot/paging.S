@@ -11,7 +11,7 @@ _setup_paging:
 
     movl pdL, %eax
     orl $0, %eax    # 0x0 address
-    orl $0b10000011, %eax # P + R/W + PS
+    orl $0b110000011, %eax # P + R/W + PS + G
 
     movl %eax, pdL
     movl %eax, pdH

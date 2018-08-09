@@ -20,7 +20,7 @@ add_subdirectory(kernel)
 set(CMAKE_C_COMPILER "${BUILD_ARCH}-${BUILD_FMT}-gcc")
 set(CMAKE_ASM_COMPILER "${CMAKE_C_COMPILER}")
 
-set(CMAKE_C_FLAGS "-Wall -Wextra -Werror -O2 -ffreestanding\
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -Wall -Wextra -Werror -ffreestanding\
         -Wno-int-to-pointer-cast")
 
 set(CMAKE_EXE_LINKER_FLAGS "-ffreestanding \
