@@ -1,6 +1,7 @@
 #pragma once
 
 #include <arch/x86_64/include/boot/multiboot.h>
+#include <arch/x86_64/include/mm/zone.h>
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -15,8 +16,6 @@ enum phys_mem_zone
 	PHYS_LOW_MEM,
 	/* Memory above 4 GiB */
 	PHYS_HIGH_MEM,
-	/* Memory above the kernel */
-	PHYS_NORMAL,
 };
 
 /* Initialize the physical memory allocator */

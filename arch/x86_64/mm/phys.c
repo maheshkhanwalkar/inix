@@ -1,26 +1,16 @@
 #include <arch/x86_64/include/mm/phys.h>
+#include <arch/x86_64/include/lock/spinlock.h>
 
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
 
-struct zone_data
-{
-	uint64_t k_zone;
-	uint64_t low_limit;
-};
-
 static struct multiboot_mmap_entry map[32];
-static struct zone_data z_data;
-
-static size_t e_count;
-static uint64_t page_size = 0x1000;
+static struct zone b_kernel, low_mem, high_mem;
+static const uint64_t page_size = 0x1000;
 
 static inline bool contains_obj(size_t index, uint64_t obj_start, uint64_t obj_end)
 {
-	if(index >= e_count)
-		return false;
-
 	struct multiboot_mmap_entry* entry = &map[index];
 	return entry->addr <= obj_start && entry->addr + entry->len >= obj_end;
 }
@@ -44,12 +34,13 @@ bool phys_init(struct multiboot_info* info, uint64_t vma, uint64_t k_start, uint
 		return false;
 
 	uint64_t ptr = info->mmap_addr + vma;
-	e_count = info->mmap_length / sizeof(struct multiboot_mmap_entry);
+	size_t e_count = info->mmap_length / sizeof(struct multiboot_mmap_entry);
 
 	for(size_t s = 0; s < e_count; s++)
 		map[s] = ((struct multiboot_mmap_entry*)ptr)[s];
 
 	bool first = false;
+	uint64_t k_pos = 0, low_lim = 0;
 
 	for(size_t s = 0; s < e_count; s++)
 	{
@@ -60,7 +51,7 @@ bool phys_init(struct multiboot_info* info, uint64_t vma, uint64_t k_start, uint
 			map[s].len -= align - map[s].addr;
 			map[s].addr = align;
 
-			z_data.k_zone = s;
+			k_pos = s;
 		}
 		else
 		{
@@ -72,69 +63,62 @@ bool phys_init(struct multiboot_info* info, uint64_t vma, uint64_t k_start, uint
 
 		if(map[s].addr >= 0x100000000 && !first)
 		{
-			z_data.low_limit = s;
+			low_lim = s;
 			first = true;
 		}
 	}
 
+	// Initialize zones
+	b_kernel.map = map;
+	b_kernel.start = 0;
+	b_kernel.end = k_pos;
+
+	low_mem.map = map;
+	low_mem.start = k_pos;
+	low_mem.end = low_lim;
+
+	high_mem.map = map;
+	high_mem.start = low_lim;
+	high_mem.end = e_count;
+
 	return true;
 }
 
-static inline void zone_select(enum phys_mem_zone zone, size_t* const start,
-		size_t* const end)
+static inline struct zone* zone_select(enum phys_mem_zone zone)
 {
+	struct zone* zt;
+
 	switch(zone)
 	{
 		case PHYS_BELOW_KERNEL:
-			*start = 0;
-			*end = z_data.k_zone;
+			zt = &b_kernel;
 			break;
 
 		case PHYS_LOW_MEM:
-			*start = z_data.k_zone;
-			*end = z_data.low_limit;
+			zt = &low_mem;
 			break;
 
 		case PHYS_HIGH_MEM:
-			*start = z_data.low_limit;
-			*end = e_count;
+			zt = &high_mem;
 			break;
 
-		case PHYS_NORMAL:
-			*start = z_data.k_zone;
-			*end = e_count;
-			break;
-
-		/* Invalid */
 		default:
-			*start = 0;
-			*end = 0;
+			zt = NULL;
 			break;
 	}
+
+	return zt;
 }
 
 uint64_t phys_get_frame(enum phys_mem_zone zone)
 {
-	uint64_t start, end;
-	zone_select(zone, &start, &end);
+	return phys_carve(zone, page_size);
+}
 
-	for(size_t s = start; s < end; s++)
-	{
-		struct multiboot_mmap_entry* curr = &map[s];
+uint64_t phys_carve(enum phys_mem_zone zone, uint64_t amt)
+{
+	struct zone* zt = zone_select(zone);
 
-		if(curr->type != MULTIBOOT_MEMORY_AVAILABLE)
-			continue;
-
-		if(curr->len < page_size)
-			continue;
-
-		uint64_t frame = curr->addr;
-
-		curr->addr += page_size;
-		curr->len -= page_size;
-
-		return frame;
-	}
-
-	return PHYS_BAD_ALLOC;
+	uint64_t request = align_by(amt, page_size);
+	return zone_get_chunk(zt, request);
 }
