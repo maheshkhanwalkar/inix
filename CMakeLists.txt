@@ -30,6 +30,5 @@ set(CMAKE_EXE_LINKER_FLAGS "-ffreestanding \
 include_directories(.)
 
 add_executable(vminix "${SRCS}")
-target_link_libraries(vminix gcc)
 
 #-----------------------------------------------------------------------------#
