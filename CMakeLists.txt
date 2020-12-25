@@ -5,7 +5,20 @@ project(vminix C ASM)
 # Build configuration                                                         #
 #-----------------------------------------------------------------------------#
 
-set(BUILD_ARCH "x86_64" CACHE STRING "Target architecture")
+set(INIX_BUILD_ARCH "x86_64" CACHE STRING "Target architecture")
+set(CMAKE_VERBOSE_MAKEFILE 1)
+
+#-----------------------------------------------------------------------------#
+# Compiler flags                                                              #
+#-----------------------------------------------------------------------------#
+
+set(ADDITIONAL_C_FLAGS "-O2 -Wall -Wextra -ffreestanding -fPIE")
+
+if(INIX_BUILD_ARCH STREQUAL "x86_64")
+    set(ARCH_C_FLAGS "-target x86_64-linux-elf")
+else()
+    message(FATAL_ERROR "Unknown target arch")
+endif()
 
 #-----------------------------------------------------------------------------#
 # Toolchain setup                                                             #
@@ -13,22 +26,23 @@ set(BUILD_ARCH "x86_64" CACHE STRING "Target architecture")
 
 enable_language(ASM-ATT)
 
-# Top-level subdirectories
-add_subdirectory(arch/${BUILD_ARCH})
-add_subdirectory(kernel)
-
-set(CMAKE_C_COMPILER "clang")
+set(CMAKE_C_COMPILER clang)
 set(CMAKE_ASM_COMPILER "${CMAKE_C_COMPILER}")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -Wall -Wextra -Werror -ffreestanding\
-        -Wno-int-to-pointer-cast")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ADDITIONAL_C_FLAGS} ${ARCH_C_FLAGS}")
+set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 
-set(CMAKE_EXE_LINKER_FLAGS "-ffreestanding \
-    -fuse-ld=lld -Wl,-T${CMAKE_SOURCE_DIR}/arch/${BUILD_ARCH}/linker.ld \
+set(CMAKE_EXE_LINKER_FLAGS "-ffreestanding -Wl,--no-dynamic-linker -pie \
+    -Wl,-T${CMAKE_SOURCE_DIR}/arch/${INIX_BUILD_ARCH}/linker.ld \
     ${VMINIX_ARCH_LDFLAGS} -nostdlib")
+
+# Top-level subdirectories
+add_subdirectory(arch/${INIX_BUILD_ARCH})
+add_subdirectory(kernel)
 
 include_directories(.)
 
-add_executable(vminix "${SRCS}")
+add_executable(vminix /dev/null)
+target_link_libraries(vminix kernel ${INIX_BUILD_ARCH})
 
 #-----------------------------------------------------------------------------#
