@@ -6,7 +6,7 @@ project(vminix C ASM)
 #-----------------------------------------------------------------------------#
 
 set(INIX_BUILD_ARCH "x86_64" CACHE STRING "Target architecture")
-set(CMAKE_VERBOSE_MAKEFILE 1)
+# set(CMAKE_VERBOSE_MAKEFILE 1)
 
 #-----------------------------------------------------------------------------#
 # Compiler flags                                                              #
