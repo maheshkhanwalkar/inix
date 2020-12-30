@@ -4,16 +4,11 @@ ENTRY(_entry64)
 SECTIONS
 {
     kernel_vma = 0xFFFFFFFF80000000;
-    . = kernel_vma + 1M;
+    . = kernel_vma;
 
     .text ALIGN(4K):
     {
         *(.text)
-    }
-
-    .boot_params: ALIGN(4K):
-    {
-        *(.boot_params)
     }
 
     .data: ALIGN(4K):
