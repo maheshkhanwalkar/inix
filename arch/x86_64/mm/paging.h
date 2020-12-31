@@ -1,8 +1,6 @@
-//
-// Created by Mahesh Khanwalkar on 12/30/20.
-//
+#pragma once
 
-#ifndef VMINIX_PAGING_H
-#define VMINIX_PAGING_H
-
-#endif //VMINIX_PAGING_H
+#define PG_PRESENT    0x1
+#define PG_WRITE      0x2
+#define PG_GLOBAL     0x100
+#define PG_NO_EXECUTE (1UL << 63)
