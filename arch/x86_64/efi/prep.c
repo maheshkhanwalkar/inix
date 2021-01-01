@@ -74,7 +74,7 @@ static void setup_kernel_tables(unsigned long kern_base, kern_img_t* kern_img)
                 pt_pos++;
             }
 
-            unsigned long address = kern_base + pt_pos * PT_NUM_ENTRIES + page_pos * PAGE_SIZE;
+            unsigned long address = kern_base + (pt_pos * PT_NUM_ENTRIES + page_pos) * PAGE_SIZE;
 
             // Explicitly disallow W+X permissions
             unsigned long nx = (hdr->p_flags & PF_X) ? 0 : PG_NO_EXECUTE;
@@ -177,6 +177,9 @@ static void setup_stack(mem_map_t* mem_map)
     }
 
     scratch_pd[PT_NUM_ENTRIES - 1] = (unsigned long)&stack_pt | PG_WRITE | PG_PRESENT;
+
+    boot_params.stack_top = 0xFFFFFFFFFFFFFFFF;
+    boot_params.stack_bottom = boot_params.stack_top - STACK_NUM_PAGES * PAGE_SIZE;
 }
 
 /**

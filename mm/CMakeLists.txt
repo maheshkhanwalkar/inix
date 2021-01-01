@@ -1,2 +1,2 @@
-set(SOURCES phys.c phys.h)
+set(SOURCES phys.c vm.c)
 add_library(mm OBJECT ${SOURCES})
