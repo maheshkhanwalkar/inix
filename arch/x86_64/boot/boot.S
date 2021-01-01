@@ -22,12 +22,17 @@ _prep_efi_args:
     movq %r9, %rdx
     movq %cr3, %rcx
 
-    # Save kernel base on the stack
+    # Save kernel base and memory map on the stack
     pushq %rdi
+    pushq %rdx
 
     # Perform some prep work to put the kernel in a good state
     call low_level_prep
     movq %rax, %cr3
+
+    # Copy the memory map
+    popq %rdi
+    callq copy_memory_map
 
     # Compute higher-half address
     movq $0xFFFFFFFF80000000, %rax
