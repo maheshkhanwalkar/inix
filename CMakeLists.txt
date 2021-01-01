@@ -42,6 +42,7 @@ include_directories(include)
 # Top-level subdirectories
 add_subdirectory(arch/${CONFIG_BUILD_ARCH})
 add_subdirectory(kernel)
+add_subdirectory(mm)
 
 add_executable(vminix /dev/null)
 target_link_libraries(vminix kernel ${CONFIG_BUILD_ARCH})

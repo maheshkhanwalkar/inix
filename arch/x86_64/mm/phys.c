@@ -35,7 +35,7 @@ static bool check_condition(unsigned long phys_addr, phys_zone_t zone)
  * management is delegated up to the virtual memory manager which handles
  * allocation, freeing, and coalescing of fine-grained blocks of memory.
  */
-uint64_t phys_carve(uint64_t amt, phys_zone_t zone)
+static uint64_t phys_carve(uint64_t amt, phys_zone_t zone)
 {
     // Ensure we are allocating at page-granularity
     amt = (amt + PHYS_BLOCK_GRANULARITY - 1) / PHYS_BLOCK_GRANULARITY * PHYS_BLOCK_GRANULARITY;
@@ -55,4 +55,16 @@ uint64_t phys_carve(uint64_t amt, phys_zone_t zone)
 
     // Could not allocate!
     return 0;
+}
+
+/**
+ * Arch-specific wrapper -- see mm/phys.c
+ *
+ * This function is invoked from the arch-independent phys_carve()
+ * implementation and is passed arch-specific flags, if needed.
+ */
+uint64_t phys_mem_carve(uint64_t amt, uint32_t flags)
+{
+    phys_zone_t zone = (phys_zone_t)flags;
+    return phys_carve(amt, zone);
 }
