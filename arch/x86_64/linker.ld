@@ -3,7 +3,7 @@ ENTRY(_entry64)
 
 SECTIONS
 {
-    kernel_vma = 0x7e08d000;
+    kernel_vma = 0xFFFFFFFF80000000;
     . = kernel_vma;
 
     .text ALIGN(4K):

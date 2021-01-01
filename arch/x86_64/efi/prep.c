@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <inix/elf.h>
+#include <arch/x86_64/boot/params.h>
 #include <arch/x86_64/efi/memory.h>
 #include <arch/x86_64/mm/pml4.h>
 #include <arch/x86_64/mm/paging.h>
@@ -17,15 +18,9 @@ typedef struct mem_map {
     efi_memory_entry_t* map;
 } mem_map_t;
 
-typedef struct boot_params {
-    memory_map_t map;
-    unsigned long kernel_start, kernel_end;
-} boot_params_t;
 
-/**
- * Boot parameters
- */
-boot_params_t boot_params;
+// Boot parameters reference (see arch/x86_64/boot/params.c)
+extern boot_params_t boot_params;
 
 // Page table references (see arch/x86_64/mm/pml4.c)
 extern uint64_t pml4e[PT_NUM_ENTRIES];
