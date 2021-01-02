@@ -23,7 +23,7 @@ static void* allocate(uintptr_t pages)
     uintptr_t virt = vm_carve(pages);
 
     if(!phys || !virt) {
-        // TODO -- need to panic here!
+        panic();
     }
 
     for(uintptr_t i = 0; i < pages; i++) {
@@ -117,6 +117,19 @@ void* vm_alloc(uintptr_t amt)
 
 void vm_free(void* ptr)
 {
-    // TODO implement free
-    (void)ptr;
+    if(!ptr)
+        return;
+
+    // TODO - this current implementation will lead to fragmentation, which
+    //  is not ideal -- coalescing support is needed!
+
+    free_list_t* meta = (free_list_t*)ptr - 1;
+
+    // Check for potential corruption
+    if(meta->checksum != VM_CHECKSUM) {
+        panic();
+    }
+
+    meta->next = free_head.next;
+    free_head.next = meta;
 }
