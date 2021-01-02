@@ -1,10 +1,12 @@
-#include <mm/phys.h>
-#include <mm/vm.h>
+#include <mm/alloc.h>
 
 void kernel_main()
 {
-    uintptr_t phys = phys_carve(0x1000, 0);
-    uintptr_t virt = vm_carve(1);
+    vm_init();
 
-    vm_map_page(virt, phys, VM_PG_PRESENT | VM_PG_WRITE);
+    char* buffer = vm_alloc(256);
+    buffer[0] = 'h';
+
+    char* next = vm_alloc(256);
+    next[0] = 'e';
 }

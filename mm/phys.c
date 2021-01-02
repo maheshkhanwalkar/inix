@@ -13,7 +13,7 @@ extern uintptr_t phys_mem_carve(uintptr_t amt, uint32_t flags);
  * use the arch-independent allocator, rather than hooking into the
  * arch-specific one for *special* allocation requests.
  */
-uintptr_t phys_carve(uintptr_t amt, uint32_t arch_flags)
+uintptr_t phys_carve(uintptr_t pages, uint32_t arch_flags)
 {
-    return phys_mem_carve(amt, arch_flags);
+    return phys_mem_carve(pages, arch_flags);
 }

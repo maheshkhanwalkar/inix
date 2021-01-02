@@ -25,7 +25,7 @@ static uint64_t* get_table(uint64_t* table, unsigned int pos)
 
     // Allocate the table, if needed
     if(addr == 0) {
-        addr = phys_carve(PAGE_SIZE, PHYS_ZONE_NORMAL);
+        addr = phys_carve(1, PHYS_ZONE_NORMAL);
         table[pos] = addr | PG_PRESENT | PG_WRITE | PG_NO_EXECUTE;
     }
 

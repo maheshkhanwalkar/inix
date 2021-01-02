@@ -2,7 +2,6 @@
 #include <stdint.h>
 
 #define PT_NUM_ENTRIES 512
-#define PAGE_SIZE 0x1000
 
 #define PAGE_ALIGN(addr) ((addr) & ~(PAGE_SIZE - 1UL))
 

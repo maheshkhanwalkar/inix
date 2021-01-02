@@ -1,4 +1,5 @@
 #include <arch/x86_64/mm/phys.h>
+#include <arch/x86_64/mm/paging.h>
 #include <arch/x86_64/boot/params.h>
 
 #include <stdint.h>
@@ -35,10 +36,9 @@ static bool check_condition(unsigned long phys_addr, phys_zone_t zone)
  * management is delegated up to the virtual memory manager which handles
  * allocation, freeing, and coalescing of fine-grained blocks of memory.
  */
-static uint64_t phys_carve(uint64_t amt, phys_zone_t zone)
+static uint64_t phys_carve(uint64_t pages, phys_zone_t zone)
 {
-    // Ensure we are allocating at page-granularity
-    amt = (amt + PHYS_BLOCK_GRANULARITY - 1) / PHYS_BLOCK_GRANULARITY * PHYS_BLOCK_GRANULARITY;
+    uint64_t amt = pages * PAGE_SIZE;
 
     for(unsigned long i = 0; i < boot_params.map.count; i++) {
         memory_map_entry_t* entry = &boot_params.map.entries[i];
@@ -63,8 +63,8 @@ static uint64_t phys_carve(uint64_t amt, phys_zone_t zone)
  * This function is invoked from the arch-independent phys_carve()
  * implementation and is passed arch-specific flags, if needed.
  */
-uint64_t phys_mem_carve(uint64_t amt, uint32_t flags)
+uint64_t phys_mem_carve(uint64_t pages, uint32_t flags)
 {
     phys_zone_t zone = (phys_zone_t)flags;
-    return phys_carve(amt, zone);
+    return phys_carve(pages, zone);
 }
