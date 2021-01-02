@@ -64,6 +64,12 @@ static void* create_entry(uintptr_t actual, free_list_t* after)
     }
 }
 
+static uintptr_t compute_pad(uintptr_t amt)
+{
+    uintptr_t ptr_size = sizeof(uintptr_t);
+    return ptr_size - (amt & (ptr_size - 1));
+}
+
 void vm_init()
 {
     uintptr_t pages = DIV_UP(VM_INITIAL_BUFFER, vm_page_size());
@@ -79,7 +85,7 @@ void vm_init()
 
 void* vm_alloc(uintptr_t amt)
 {
-    uintptr_t actual = amt + sizeof(free_list_t);
+    uintptr_t actual = amt + sizeof(free_list_t) + compute_pad(amt);
 
     if(!free_head.next) {
         return create_entry(actual, NULL);
