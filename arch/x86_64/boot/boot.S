@@ -1,109 +1,58 @@
-.code32
-
-# Multiboot header constants
-.set ALIGN,    1<<0
-.set MEMINFO,  1<<1
-.set FLAGS,    ALIGN | MEMINFO
-.set MAGIC,    0x1BADB002
-.set CHECKSUM, -(MAGIC + FLAGS)
-
-# Embedded Multiboot Header
-.section .multiboot,"aw",@progbits
-.align 4
-.long MAGIC
-.long FLAGS
-.long CHECKSUM
-
-.section .bstrapL,"ax",@progbits
-.globl _low_init
-
-_low_init:
-    # Setup bootstrap stack
-    movl $bstack_top, %esp
-
-    # Save pointer (64 bit LSB)
-    pushl $0
-    pushl %ebx
-
-    # Setup 4-table paging
-    call _setup_paging  # paging.S
-
-    # Enable paging
-    call _enable_paging # paging.S
-
-    # Load 64-bit GDT
-    lgdt gdtr           # gdt.S
-
-    # Far jump to set CS
-    ljmp $0x08,$_jmp_target
-
-.section .bstack,"aw",@progbits
-bstack_bottom:
-.skip 128
-bstack_top:
-
 .code64
 
-.section .bstrapL,"ax",@progbits
-.globl _jmp_target
+.section .text
+.globl _entry64
+_entry64:
+    # Check for EFI magic
+    cmpq $0xEF1B001, %rcx
+    je _prep_efi_args
 
-_jmp_target:
-    movw $0x10, %ax
-    movw %ax, %ds
-    movw %ax, %ss
-    movw %ax, %es
-    movw %ax, %gs
-    movw %ax, %fs
-
-    popq %rax
-
-    # Setup new stack
-    movq $hstack_top, %rsp
-    pushq %rax
-
-    # Jump to higher-half
-    jmp _high_init
-
-.section .bstrapH,"ax",@progbits
-.globl _high_init
-
-_high_init:
-    # Disable interrupts
-    cli
-
-    # Unmap the lower half
-    callq _unmap_lower
-
-    # Enable SSE support
-    callq _enable_sse
-
-	# Initialize physical allocator
-	popq %rdi
-	addq $kernel_vma, %rdi
-
-	movq $kernel_vma, %rsi
-	movq $kernel_start, %rdx
-	movq $kernel_end, %rcx
-
-	callq phys_init
-
-	cmpq $0, %rax
-	je .hang
-
-    # Enter kernel_main()
-    callq kernel_main
-
-.hang:
+    # Loaded by something else -- not supported
     cli
     hlt
 
-_unmap_lower:
-    movq $pdL, %rax
-    movq $0, (%rax)
-    invlpg 0
-    retq
+_prep_efi_args:
+    # Disable interrupts, cleanup IDT
+    cli
+    lidtq 0
 
-.section .hstack,"aw",@progbits
-hstack_bottom:
-.skip 16384
-hstack_top:
+    # MS x64 ABI --> System V x86_64 ABI
+    movq %rdx, %rdi
+    movq %r8, %rsi
+    movq %r9, %rdx
+    movq %cr3, %rcx
+
+    # Save kernel base and memory map on the stack
+    pushq %rdi
+    pushq %rdx
+
+    # Perform some prep work to put the kernel in a good state
+    call low_level_prep
+    movq %rax, %cr3
+
+    # Copy the memory map
+    popq %rdi
+    callq copy_memory_map
+
+    # Compute higher-half address
+    movq $0xFFFFFFFF80000000, %rax
+    lea _high_entry64(%rip), %rbx
+    popq %rdi
+    subq %rdi, %rbx
+    addq %rbx, %rax
+
+    # Jump into the higher-half
+    jmpq *%rax
+
+_high_entry64:
+    # Unmap lower half
+    movq %cr3, %rax
+    movq $0, (%rax)
+    movq %rax, %cr3
+
+    # Fix stack
+    movq $0xFFFFFFFFFFFFFFFF, %rsp
+    call kernel_main
+
+    cli
+    hlt

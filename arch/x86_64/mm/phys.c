@@ -1,124 +1,70 @@
-#include <arch/x86_64/include/mm/phys.h>
-#include <arch/x86_64/include/lock/spinlock.h>
+#include <arch/x86_64/mm/phys.h>
+#include <arch/x86_64/mm/paging.h>
+#include <arch/x86_64/boot/params.h>
 
 #include <stdint.h>
-#include <stddef.h>
 #include <stdbool.h>
 
-static struct multiboot_mmap_entry map[32];
-static struct zone b_kernel, low_mem, high_mem;
-static const uint64_t page_size = 0x1000;
+#define PHYS_BLOCK_GRANULARITY 0x1000
+#define PHYS_LOW_MEMORY_BAR 0x100000
 
-static inline bool contains_obj(size_t index, uint64_t obj_start, uint64_t obj_end)
+extern boot_params_t boot_params;
+
+static bool check_condition(unsigned long phys_addr, phys_zone_t zone)
 {
-	struct multiboot_mmap_entry* entry = &map[index];
-	return entry->addr <= obj_start && entry->addr + entry->len >= obj_end;
+    if(zone == PHYS_ZONE_NORMAL && phys_addr >= PHYS_LOW_MEMORY_BAR)
+        return true;
+
+    if(zone == PHYS_ZONE_LOW_MEMORY && phys_addr < PHYS_LOW_MEMORY_BAR)
+        return true;
+
+    return false;
 }
 
-static inline uint64_t align_by(uint64_t addr, uint64_t align)
+/**
+ * Carve out a contiguous chunk of memory from the specified memory zone
+ *
+ * The specified amount should be a multiple of the physical memory
+ * subsystem block granularity (PHYS_BLOCK_GRANULARITY), which is silently
+ * enforced, if that is not the case.
+ *
+ * This function simply scans the memory map and finds the first section
+ * that can accommodate the request and returns the memory. If no such section
+ * exists, then it simply returns 0 as an error.
+ *
+ * This allocator does not support giving back physical memory -- all memory
+ * management is delegated up to the virtual memory manager which handles
+ * allocation, freeing, and coalescing of fine-grained blocks of memory.
+ */
+static uint64_t phys_carve(uint64_t pages, phys_zone_t zone)
 {
-	uint64_t mask = ~(align - 1);
-	uint64_t below = addr & mask;
+    uint64_t amt = pages * PAGE_SIZE;
 
-	return below == addr ? addr : below + align;
+    for(unsigned long i = 0; i < boot_params.map.count; i++) {
+        memory_map_entry_t* entry = &boot_params.map.entries[i];
+
+        if(entry->num_bytes >= amt && check_condition(entry->phys_addr, zone)) {
+            uint64_t address = entry->phys_addr;
+
+            entry->phys_addr += amt;
+            entry->num_bytes -= amt;
+
+            return address;
+        }
+    }
+
+    // Could not allocate!
+    return 0;
 }
 
-bool phys_init(struct multiboot_info* info, uint64_t vma, uint64_t k_start, uint64_t k_end)
+/**
+ * Arch-specific wrapper -- see mm/phys.c
+ *
+ * This function is invoked from the arch-independent phys_carve()
+ * implementation and is passed arch-specific flags, if needed.
+ */
+uint64_t phys_mem_carve(uint64_t pages, uint32_t flags)
 {
-	// No memory map
-	if((info->flags & 64) == 0)
-		return false;
-
-	// Memory map too large
-	if(info->mmap_length > sizeof(map))
-		return false;
-
-	uint64_t ptr = info->mmap_addr + vma;
-	size_t e_count = info->mmap_length / sizeof(struct multiboot_mmap_entry);
-
-	for(size_t s = 0; s < e_count; s++)
-		map[s] = ((struct multiboot_mmap_entry*)ptr)[s];
-
-	bool first = false;
-	uint64_t k_pos = 0, low_lim = 0;
-
-	for(size_t s = 0; s < e_count; s++)
-	{
-		if(contains_obj(s, k_start, k_end))
-		{
-			uint64_t align = align_by(k_end, 0x100000);
-
-			map[s].len -= align - map[s].addr;
-			map[s].addr = align;
-
-			k_pos = s;
-		}
-		else
-		{
-			uint64_t align = align_by(map[s].addr, page_size);
-
-			map[s].len -= align - map[s].addr;
-			map[s].addr = align;
-		}
-
-		if(map[s].addr >= 0x100000000 && !first)
-		{
-			low_lim = s;
-			first = true;
-		}
-	}
-
-	// Initialize zones
-	b_kernel.map = map;
-	b_kernel.start = 0;
-	b_kernel.end = k_pos;
-
-	low_mem.map = map;
-	low_mem.start = k_pos;
-	low_mem.end = low_lim;
-
-	high_mem.map = map;
-	high_mem.start = low_lim;
-	high_mem.end = e_count;
-
-	return true;
-}
-
-static inline struct zone* zone_select(enum phys_mem_zone zone)
-{
-	struct zone* zt;
-
-	switch(zone)
-	{
-		case PHYS_BELOW_KERNEL:
-			zt = &b_kernel;
-			break;
-
-		case PHYS_LOW_MEM:
-			zt = &low_mem;
-			break;
-
-		case PHYS_HIGH_MEM:
-			zt = &high_mem;
-			break;
-
-		default:
-			zt = NULL;
-			break;
-	}
-
-	return zt;
-}
-
-uint64_t phys_get_frame(enum phys_mem_zone zone)
-{
-	return phys_carve(zone, page_size);
-}
-
-uint64_t phys_carve(enum phys_mem_zone zone, uint64_t amt)
-{
-	struct zone* zt = zone_select(zone);
-
-	uint64_t request = align_by(amt, page_size);
-	return zone_get_chunk(zt, request);
+    phys_zone_t zone = (phys_zone_t)flags;
+    return phys_carve(pages, zone);
 }
