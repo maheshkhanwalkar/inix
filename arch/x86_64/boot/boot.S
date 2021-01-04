@@ -34,6 +34,32 @@ _prep_efi_args:
     popq %rdi
     callq copy_memory_map
 
+    # Setup our GDT
+    lea gdtr(%rip), %rax
+    addq $2, %rax
+    lea gdt64(%rip), %rbx
+    movq %rbx, (%rax)
+    subq $2, %rax
+    lgdt (%rax)
+
+    # Set CS
+    movq %rsp, %rax
+    pushq $0x10
+    pushq %rax  # Original %rsp
+    pushfq
+    pushq $0x08
+    lea _set_cs(%rip), %rax
+    pushq %rax
+    iretq
+
+_set_cs:
+    movw $0x10, %ax
+    movw %ax, %ds
+    movw %ax, %ss
+    movw %ax, %es
+    movw %ax, %gs
+    movw %ax, %fs
+
     # Compute higher-half address
     movq $0xFFFFFFFF80000000, %rax
     lea _high_entry64(%rip), %rbx
@@ -56,3 +82,28 @@ _high_entry64:
 
     cli
     hlt
+
+.section .data
+gdt64:
+    # Null Segment
+    .quad 0
+
+    # Kernel Code Segment
+    .short 0xFFFF
+    .short 0
+    .byte 0
+    .byte 0b10011000 # P + DPL0 + Exec
+    .byte 0b10111111 # G + L + AVL + Limit
+    .byte 0
+
+    # Kernel Data Segment
+    .short 0xFFFF
+    .short 0
+    .byte 0
+    .byte 0b10010010 # P + DPL0 + R/W
+    .byte 0b10111111 # G + L + AVL + Limit
+    .byte 0
+
+gdtr:
+    .short 24
+    .quad 0    # Determined at runtime
