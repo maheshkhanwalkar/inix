@@ -34,7 +34,18 @@ _prep_efi_args:
     popq %rdi
     callq copy_memory_map
 
-    # Setup our GDT
+    # Compute higher-half address
+    movq $0xFFFFFFFF80000000, %rax
+    lea _high_entry64(%rip), %rbx
+    popq %rdi
+    subq %rdi, %rbx
+    addq %rbx, %rax
+
+    # Jump into the higher-half
+    jmpq *%rax
+
+_high_entry64:
+    # Setup GDT
     lea gdtr(%rip), %rax
     addq $2, %rax
     lea gdt64(%rip), %rbx
@@ -60,17 +71,11 @@ _set_cs:
     movw %ax, %gs
     movw %ax, %fs
 
-    # Compute higher-half address
-    movq $0xFFFFFFFF80000000, %rax
-    lea _high_entry64(%rip), %rbx
-    popq %rdi
-    subq %rdi, %rbx
-    addq %rbx, %rax
+    # Disable TSS (for now)
+    movw $0, %ax
+    ltr %ax
 
-    # Jump into the higher-half
-    jmpq *%rax
-
-_high_entry64:
+_unmap_lower:
     # Unmap lower half
     movq %cr3, %rax
     movq $0, (%rax)
@@ -104,6 +109,22 @@ gdt64:
     .byte 0b10111111 # G + L + AVL + Limit
     .byte 0
 
+    # User Code Segment
+    .short 0xFFFF
+    .short 0
+    .byte 0
+    .byte 0b11111000 # P + DPL3 + Exec
+    .byte 0b10111111 # G + L + AVL + Limit
+    .byte 0
+
+    # User Data Segment
+    .short 0xFFFF
+    .short 0
+    .byte 0
+    .byte 0b11110010 # P + DPL3 + R/W
+    .byte 0b10111111 # G + L + AVL + Limit
+    .byte 0
+
 gdtr:
-    .short 24
+    .short 40
     .quad 0    # Determined at runtime

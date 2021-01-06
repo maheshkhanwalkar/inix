@@ -38,7 +38,7 @@ void idt_install_handler(unsigned short pos, unsigned long address)
     idt[pos].base_high = address >> 32;
 
     idt[pos].segment = GDT_KERNEL_CODE;
-    idt[pos].flags = 0x8700; /* P + DPL=00 + Interrupt Gate */
+    idt[pos].flags = 0x8E00; /* P + DPL=00 + Interrupt Gate */
 }
 
 void irq_arch_setup()
