@@ -3,7 +3,9 @@
 #include <arch/x86_64/mm/phys.h>
 #include <arch/x86_64/mm/paging.h>
 #include <arch/x86_64/mm/invlpg.h>
+
 #include <mm/phys.h>
+#include <mm/scratch.h>
 
 // Base page tables
 uint64_t pml4e[PT_NUM_ENTRIES]__attribute__((aligned(PAGE_SIZE)));
@@ -29,13 +31,7 @@ static uint64_t* get_table(uint64_t* table, unsigned int pos)
         table[pos] = addr | PG_PRESENT | PG_WRITE | PG_NO_EXECUTE;
     }
 
-    scratch_pt[0] = addr | PG_PRESENT | PG_WRITE | PG_NO_EXECUTE;
-
-    // FIXME: the whole "scratch" space implementation needs to be reworked
-    uint64_t scratch_virt = 0xFFFFFFFFC0000000;
-    _invlpg(scratch_virt);
-
-    return (uint64_t*)scratch_virt;
+    return (uint64_t*)scratch_map(addr);
 }
 
 void pml4_map_page(uint64_t v_addr, uint64_t phys_addr, unsigned long flags)
@@ -51,4 +47,9 @@ void pml4_map_page(uint64_t v_addr, uint64_t phys_addr, unsigned long flags)
 
     pt_table[pt_pos] = phys_addr | flags;
     _invlpg(v_addr);
+
+    // Unmap the tables
+    scratch_unmap(pdpt_table);
+    scratch_unmap(pd_table);
+    scratch_unmap(pt_table);
 }
