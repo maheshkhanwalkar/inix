@@ -6,6 +6,7 @@
 #include <arch/x86_64/mm/invlpg.h>
 
 #include <inix/mm/type.h>
+#include <inix/mm/paging.h>
 #include <inix/defs.h>
 
 static const uint64_t SCRATCH_BASE_ADDR = 0xFFFFFFFFC0000000;
@@ -17,7 +18,7 @@ void* arch_scratch_map(uint64_t frame)
         if(scratch_pt[i] == 0) {
             scratch_pt[i] = frame | PG_PRESENT | PG_WRITE | PG_NO_EXECUTE;
 
-            uint64_t virt = SCRATCH_BASE_ADDR + i * PAGE_SIZE;
+            uint64_t virt = SCRATCH_BASE_ADDR + i * VM_PAGE_SIZE;
             _invlpg(virt);
 
             return (void*)virt;
@@ -35,7 +36,7 @@ void arch_scratch_unmap(void* scratch)
     if(equiv < SCRATCH_BASE_ADDR)
         return;
 
-    uint64_t pos = (equiv - SCRATCH_BASE_ADDR) / PAGE_SIZE;
+    uint64_t pos = (equiv - SCRATCH_BASE_ADDR) / VM_PAGE_SIZE;
 
     if(pos >= PT_NUM_ENTRIES)
         return;

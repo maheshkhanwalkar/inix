@@ -70,6 +70,11 @@ ptr_t arch_phys_allocate_frame()
     ptr_t frame = stack_top;
     stack_top = *next;
 
+    // Zero out the frame -- TODO replace with memset call
+    // TODO -- make this step optional by taking a flag
+    for(uint64_t i = 0; i < VM_PAGE_SIZE / 8; i++)
+        *next = 0;
+
     scratch_unmap(next);
     return frame;
 }

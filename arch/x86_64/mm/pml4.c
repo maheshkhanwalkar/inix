@@ -27,7 +27,7 @@ static uint64_t* get_table(uint64_t* table, unsigned int pos)
 
     // Allocate the table, if needed
     if(addr == 0) {
-        addr = phys_allocate_frame(ARQ_ATOMIC);
+        addr = phys_allocate_frame();
 
         if(addr == 0) {
             panic("out of memory");
