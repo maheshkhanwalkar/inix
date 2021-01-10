@@ -77,7 +77,7 @@ static ptr_t compute_pad(uintptr_t amt)
     return ptr_size - (amt & (ptr_size - 1));
 }
 
-void vm_init()
+void vm_init(void)
 {
     ptr_t pages = DIV_UP(VM_INITIAL_BUFFER, VM_PAGE_SIZE);
     free_list_t* next = allocate(pages);

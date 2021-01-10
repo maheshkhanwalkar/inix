@@ -20,7 +20,7 @@ typedef struct idtr {
 static idt_entry_t idt[MAX_IDT_ENTRIES];
 static idtr_t idtr;
 
-void idt_install()
+static void idt_install(void)
 {
     idtr.base = (unsigned long)&idt;
     idtr.limit = MAX_IDT_ENTRIES - 1;
@@ -42,31 +42,31 @@ void idt_install_handler(unsigned short pos, unsigned long address)
 }
 
 // ISR references (see arch/x86_64/irq/target.S)
-extern void __isr0();
-extern void __isr1();
-extern void __isr2();
-extern void __isr3();
-extern void __isr4();
-extern void __isr5();
-extern void __isr6();
-extern void __isr7();
-extern void __isr8();
-extern void __isr9();
-extern void __isr10();
-extern void __isr11();
-extern void __isr12();
-extern void __isr13();
-extern void __isr14();
-extern void __isr15();
-extern void __isr16();
-extern void __isr17();
-extern void __isr18();
-extern void __isr19();
-extern void __isr20();
-extern void __isr21();
-extern void __isrReserved();
+extern void __isr0(void);
+extern void __isr1(void);
+extern void __isr2(void);
+extern void __isr3(void);
+extern void __isr4(void);
+extern void __isr5(void);
+extern void __isr6(void);
+extern void __isr7(void);
+extern void __isr8(void);
+extern void __isr9(void);
+extern void __isr10(void);
+extern void __isr11(void);
+extern void __isr12(void);
+extern void __isr13(void);
+extern void __isr14(void);
+extern void __isr15(void);
+extern void __isr16(void);
+extern void __isr17(void);
+extern void __isr18(void);
+extern void __isr19(void);
+extern void __isr20(void);
+extern void __isr21(void);
+extern void __isrReserved(void);
 
-void irq_arch_setup()
+void irq_arch_setup(void)
 {
     // ISR 0-21 stub entries
     idt_install_handler(0, (unsigned long)&__isr0);

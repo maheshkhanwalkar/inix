@@ -24,12 +24,15 @@ extern boot_params_t boot_params;
 
 // Page table references (see arch/x86_64/mm/pml4.c)
 extern uint64_t pml4e[PT_NUM_ENTRIES];
-extern uint64_t pdpt[PT_NUM_ENTRIES];
-extern uint64_t pd[PT_NUM_ENTRIES];
-extern uint64_t pt[PT_NUM_ENTRIES][PT_NUM_ENTRIES];
+
+static uint64_t pdpt[PT_NUM_ENTRIES]__attribute__((aligned(PAGE_SIZE)));
+static uint64_t pd[PT_NUM_ENTRIES]__attribute__((aligned(PAGE_SIZE)));
+static uint64_t pt[PT_NUM_ENTRIES][PT_NUM_ENTRIES]__attribute__((aligned(PAGE_SIZE)));
+
 extern uint64_t scratch_pd[PT_NUM_ENTRIES];
 extern uint64_t scratch_pt[PT_NUM_ENTRIES];
-extern uint64_t stack_pt[PT_NUM_ENTRIES];
+
+static uint64_t stack_pt[PT_NUM_ENTRIES]__attribute__((aligned(PAGE_SIZE)));
 
 static unsigned long find_free_pages(mem_map_t* mem_map, unsigned long pages)
 {

@@ -8,7 +8,7 @@
  * This function returns a physical frame of size PAGE_SIZE,
  * which can then be mapped into the virtual address space.
  */
-ptr_t phys_allocate_frame();
+ptr_t phys_allocate_frame(void);
 
 /**
  * Free a physical frame

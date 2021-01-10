@@ -12,7 +12,8 @@ set(CONFIG_BUILD_ARCH "x86_64" CACHE STRING "Target architecture")
 # Compiler flags                                                              #
 #-----------------------------------------------------------------------------#
 
-set(ADDITIONAL_C_FLAGS "-O0 -g -Wall -Wextra -pedantic -ffreestanding")
+set(ADDITIONAL_C_FLAGS "-O0 -g -Wall -Wextra -pedantic -ffreestanding -Wshadow \
+    -Wpointer-arith -Wcast-qual -Wstrict-prototypes")
 
 if(CONFIG_BUILD_ARCH STREQUAL "x86_64")
     set(ARCH_C_FLAGS "-target x86_64-linux-elf -fPIE -mno-sse -mno-sse2 -mno-mmx -mno-3dnow")

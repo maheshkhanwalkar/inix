@@ -15,7 +15,7 @@ static const uint64_t PHYS_LOW_MARK = 0x100000;
 // Boot parameters -- needed for the memory map
 extern boot_params_t boot_params;
 
-void arch_phys_init()
+void arch_phys_init(void)
 {
     for(uint64_t i = 0; i < boot_params.map.count; i++) {
         memory_map_entry_t* entry = &boot_params.map.entries[i];
@@ -58,7 +58,7 @@ void arch_phys_init()
     }
 }
 
-ptr_t arch_phys_allocate_frame()
+ptr_t arch_phys_allocate_frame(void)
 {
     // Out of memory!
     if(stack_top == 0) {

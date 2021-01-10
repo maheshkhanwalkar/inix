@@ -9,4 +9,4 @@
  *
  * See arch/x86_64/boot/boot.S for invocation details
  */
-void arch_phys_init();
+void arch_phys_init(void);
