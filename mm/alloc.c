@@ -17,7 +17,7 @@ typedef struct free_list {
     uintptr_t checksum;
 } free_list_t;
 
-free_list_t free_head;
+static free_list_t free_head;
 
 static void* allocate(ptr_t pages)
 {

@@ -174,7 +174,7 @@ static void setup_stack(mem_map_t* mem_map)
     unsigned long stack_bottom = find_free_pages(mem_map, STACK_NUM_PAGES);
 
     for(int j = 0; j < STACK_NUM_PAGES; j++) {
-        unsigned long address = stack_bottom + PAGE_SIZE * j;
+        unsigned long address = stack_bottom + PAGE_SIZE * (unsigned long) j;
         unsigned long flags = PG_NO_EXECUTE | PG_WRITE | PG_GLOBAL | PG_PRESENT;
         stack_pt[(PT_NUM_ENTRIES - STACK_NUM_PAGES) + j] = address | flags;
     }

@@ -18,7 +18,7 @@ void* arch_scratch_map(uint64_t frame)
         if(scratch_pt[i] == 0) {
             scratch_pt[i] = frame | PG_PRESENT | PG_WRITE | PG_NO_EXECUTE;
 
-            uint64_t virt = SCRATCH_BASE_ADDR + i * VM_PAGE_SIZE;
+            uint64_t virt = SCRATCH_BASE_ADDR + (unsigned long) i * VM_PAGE_SIZE;
             _invlpg(virt);
 
             return (void*)virt;
