@@ -1,8 +1,12 @@
 #pragma once
 
-typedef enum phys_zone {
-    /* All other memory */
-    PHYS_ZONE_NORMAL,
-    /* Memory < 1 MiB */
-    PHYS_ZONE_LOW_MEMORY
-} phys_zone_t;
+/**
+ * Initialise the physical allocator system
+ *
+ * This function gets called during the early setup process to initialise
+ * the physical frame allocator -- which is needed for the rest of the
+ * memory management subsystem to function.
+ *
+ * See arch/x86_64/boot/boot.S for invocation details
+ */
+void arch_phys_init();

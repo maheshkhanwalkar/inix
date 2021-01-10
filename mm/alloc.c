@@ -1,5 +1,5 @@
 #include <mm/alloc.h>
-#include <mm/phys.h>
+#include <inix/mm/phys.h>
 #include <mm/vm.h>
 #include <inix/defs.h>
 
@@ -19,7 +19,7 @@ free_list_t free_head;
 
 static void* allocate(uintptr_t pages)
 {
-    uintptr_t phys = phys_carve(pages, 0);
+    uintptr_t phys = 0;//phys_carve(pages, 0);
     uintptr_t virt = vm_carve(pages);
 
     if(!phys || !virt) {

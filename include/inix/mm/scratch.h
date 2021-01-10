@@ -9,7 +9,7 @@
  * This method should not be used directly (for the most part), since
  * the vm_map_page(...) function is sufficient for most use-cases.
  */
-void* scratch_map(ptr_t frame, alloc_req_t type);
+void* scratch_map(ptr_t frame);
 
 /**
  * Unmap the scratch space page, allowing the virtual address to be

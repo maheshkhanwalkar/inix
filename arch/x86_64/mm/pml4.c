@@ -4,8 +4,8 @@
 #include <arch/x86_64/mm/paging.h>
 #include <arch/x86_64/mm/invlpg.h>
 
-#include <mm/phys.h>
-#include <include/inix/mm/scratch.h>
+#include <inix/mm/phys.h>
+#include <inix/mm/scratch.h>
 
 // Base page tables
 uint64_t pml4e[PT_NUM_ENTRIES]__attribute__((aligned(PAGE_SIZE)));
@@ -27,11 +27,16 @@ static uint64_t* get_table(uint64_t* table, unsigned int pos)
 
     // Allocate the table, if needed
     if(addr == 0) {
-        addr = phys_carve(1, PHYS_ZONE_NORMAL);
+        addr = phys_allocate_frame(ARQ_ATOMIC);
+
+        if(addr == 0) {
+            panic("out of memory");
+        }
+
         table[pos] = addr | PG_PRESENT | PG_WRITE | PG_NO_EXECUTE;
     }
 
-    return (uint64_t*)scratch_map(addr, ARQ_ATOMIC);
+    return (uint64_t*)scratch_map(addr);
 }
 
 void pml4_map_page(uint64_t v_addr, uint64_t phys_addr, unsigned long flags)

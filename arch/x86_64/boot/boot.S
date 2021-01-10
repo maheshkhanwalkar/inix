@@ -83,6 +83,11 @@ _unmap_lower:
 
     # Fix stack
     movq $0xFFFFFFFFFFFFFFFF, %rsp
+
+    # Setup physical allocator
+    call arch_phys_init
+
+    # Jump into the kernel proper
     call kernel_main
 
     cli
