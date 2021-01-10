@@ -5,7 +5,7 @@
 #include <arch/x86_64/mm/invlpg.h>
 
 #include <mm/phys.h>
-#include <mm/scratch.h>
+#include <include/inix/mm/scratch.h>
 
 // Base page tables
 uint64_t pml4e[PT_NUM_ENTRIES]__attribute__((aligned(PAGE_SIZE)));
@@ -31,7 +31,7 @@ static uint64_t* get_table(uint64_t* table, unsigned int pos)
         table[pos] = addr | PG_PRESENT | PG_WRITE | PG_NO_EXECUTE;
     }
 
-    return (uint64_t*)scratch_map(addr);
+    return (uint64_t*)scratch_map(addr, ARQ_ATOMIC);
 }
 
 void pml4_map_page(uint64_t v_addr, uint64_t phys_addr, unsigned long flags)

@@ -1,15 +1,16 @@
-#include <mm/scratch.h>
+#include <inix/mm/scratch.h>
+#include <inix/mm/type.h>
 
 // Arch-specific references
-extern void* arch_scratch_map(ptr_t phys_addr);
-extern void arch_scratch_unmap(void* virt_addr);
+extern void* arch_scratch_map(ptr_t frame, alloc_req_t type);
+extern void arch_scratch_unmap(void* scratch);
 
-void* scratch_map(ptr_t phys_addr)
+void* scratch_map(ptr_t frame, alloc_req_t type)
 {
-    return arch_scratch_map(phys_addr);
+    return arch_scratch_map(frame, type);
 }
 
-void scratch_unmap(void* virt_addr)
+void scratch_unmap(void* scratch)
 {
-    arch_scratch_unmap(virt_addr);
+    arch_scratch_unmap(scratch);
 }
