@@ -143,7 +143,7 @@ _irq_common_base:
 
     # Execute common handler
     movq %rsp, %rdi
-    call irq_common_handler
+    call irq_common_router
 
     # Restore the previous segments
     popq %rax

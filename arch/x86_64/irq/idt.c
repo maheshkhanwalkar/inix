@@ -66,7 +66,7 @@ extern void __isr20(void);
 extern void __isr21(void);
 extern void __isrReserved(void);
 
-void irq_arch_setup(void)
+void arch_irq_setup(void)
 {
     // ISR 0-21 stub entries
     idt_install_handler(0, (unsigned long)&__isr0);

@@ -4,5 +4,5 @@
 void kernel_main(void)
 {
     vm_init();
-    irq_arch_setup();
+    arch_irq_setup();
 }
