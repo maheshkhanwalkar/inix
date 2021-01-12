@@ -9,17 +9,18 @@
 #include <inix/mm/paging.h>
 
 static uint64_t virt_base = 0xFFFF800000000000;
-extern boot_params_t boot_params;
 
 uint64_t arch_vm_carve(uint64_t pages)
 {
+    boot_params_t* boot_params = get_boot_params();
+
     // FIXME: this needs to be more complicated than this, but for a first revision
     //  it's okay -- but needs to be more robust
 
-    if(virt_base == boot_params.kernel_start)
+    if(virt_base == boot_params->kernel_start)
         return 0;
 
-    if(virt_base + pages * VM_PAGE_SIZE >= boot_params.kernel_start)
+    if(virt_base + pages * VM_PAGE_SIZE >= boot_params->kernel_start)
         return 0;
 
     uint64_t addr = virt_base;

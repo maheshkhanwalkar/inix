@@ -3,4 +3,9 @@
 /**
  * Boot parameters
  */
-boot_params_t boot_params;
+static boot_params_t boot_params;
+
+boot_params_t* get_boot_params(void)
+{
+    return &boot_params;
+}

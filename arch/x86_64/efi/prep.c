@@ -19,9 +19,6 @@ typedef struct mem_map {
 } mem_map_t;
 
 
-// Boot parameters reference (see arch/x86_64/boot/params.c)
-extern boot_params_t boot_params;
-
 // Page table references (see arch/x86_64/mm/pml4.c)
 extern uint64_t pml4e[PT_NUM_ENTRIES];
 
@@ -89,8 +86,10 @@ static void setup_kernel_tables(unsigned long kern_base, kern_img_t* kern_img)
         }
     }
 
-    boot_params.kernel_start = 0xFFFFFFFF80000000;
-    boot_params.kernel_end = boot_params.kernel_start + (pt_pos * PT_NUM_ENTRIES + page_pos) * PAGE_SIZE;
+    boot_params_t* boot_params = get_boot_params();
+
+    boot_params->kernel_start = 0xFFFFFFFF80000000;
+    boot_params->kernel_end = boot_params->kernel_start + (pt_pos * PT_NUM_ENTRIES + page_pos) * PAGE_SIZE;
 
     // Setup higher-level paging structures
     // Assumption: kernel vma is hard-coded at 0xFFFFFFFF80000000 -- FIXME!
@@ -107,8 +106,10 @@ static void setup_memory_map(mem_map_t* mem_map)
     unsigned long pages = (mem_map->count * sizeof(memory_map_entry_t) + PAGE_SIZE - 1) / PAGE_SIZE;
     unsigned long start = find_free_pages(mem_map, pages);
 
-    uint64_t pt_index = PT_INDEX(boot_params.kernel_end);
-    uint64_t pd_index = PD_INDEX(boot_params.kernel_end);
+    boot_params_t* boot_params = get_boot_params();
+
+    uint64_t pt_index = PT_INDEX(boot_params->kernel_end);
+    uint64_t pd_index = PD_INDEX(boot_params->kernel_end);
 
     for(unsigned long p = 0; p < pages; p++) {
         if(pt_index == PT_NUM_ENTRIES) {
@@ -120,9 +121,9 @@ static void setup_memory_map(mem_map_t* mem_map)
         pt[pd_index][pt_index] = (start + p * PAGE_SIZE) | flags;
     }
 
-    boot_params.map.count = mem_map->count;
-    boot_params.map.entries = (memory_map_entry_t*)boot_params.kernel_end;
-    boot_params.kernel_end += pages * PAGE_SIZE;
+    boot_params->map.count = mem_map->count;
+    boot_params->map.entries = (memory_map_entry_t*)boot_params->kernel_end;
+    boot_params->kernel_end += pages * PAGE_SIZE;
 }
 
 static enum memory_map_flags convert_flags(unsigned long type)
@@ -181,8 +182,10 @@ static void setup_stack(mem_map_t* mem_map)
 
     scratch_pd[PT_NUM_ENTRIES - 1] = (unsigned long)&stack_pt | PG_WRITE | PG_PRESENT;
 
-    boot_params.stack_top = 0xFFFFFFFFFFFFFFFF;
-    boot_params.stack_bottom = boot_params.stack_top - STACK_NUM_PAGES * PAGE_SIZE;
+    boot_params_t* boot_params = get_boot_params();
+
+    boot_params->stack_top = 0xFFFFFFFFFFFFFFFF;
+    boot_params->stack_bottom = boot_params->stack_top - STACK_NUM_PAGES * PAGE_SIZE;
 }
 
 /**
@@ -220,9 +223,11 @@ void* low_level_prep(unsigned long kern_base, kern_img_t* kern_img, mem_map_t* m
  */
 void copy_memory_map(mem_map_t* mem_map)
 {
-    for(unsigned long i = 0; i < boot_params.map.count; i++) {
-        boot_params.map.entries[i].phys_addr = mem_map->map[i].phys_start;
-        boot_params.map.entries[i].num_bytes = mem_map->map[i].num_pages * PAGE_SIZE;
-        boot_params.map.entries[i].flags = convert_flags(mem_map->map[i].type);
+    boot_params_t* boot_params = get_boot_params();
+
+    for(unsigned long i = 0; i < boot_params->map.count; i++) {
+        boot_params->map.entries[i].phys_addr = mem_map->map[i].phys_start;
+        boot_params->map.entries[i].num_bytes = mem_map->map[i].num_pages * PAGE_SIZE;
+        boot_params->map.entries[i].flags = convert_flags(mem_map->map[i].type);
     }
 }

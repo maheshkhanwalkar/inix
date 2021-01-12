@@ -12,13 +12,13 @@
 static ptr_t stack_top;
 static const uint64_t PHYS_LOW_MARK = 0x100000;
 
-// Boot parameters -- needed for the memory map
-extern boot_params_t boot_params;
-
 void arch_phys_init(void)
 {
-    for(uint64_t i = 0; i < boot_params.map.count; i++) {
-        memory_map_entry_t* entry = &boot_params.map.entries[i];
+    // Boot parameters -- needed for the memory map
+    boot_params_t* boot_params = get_boot_params();
+
+    for(uint64_t i = 0; i < boot_params->map.count; i++) {
+        memory_map_entry_t* entry = &boot_params->map.entries[i];
 
         if(entry->flags != PHYS_NORMAL_MEMORY || entry->phys_addr < PHYS_LOW_MARK) {
             continue;
@@ -30,18 +30,18 @@ void arch_phys_init(void)
             uint64_t* frame = scratch_map(entry->phys_addr + p * VM_PAGE_SIZE);
 
             if(p == pages - 1) {
-                if(i == boot_params.map.count - 1) {
+                if(i == boot_params->map.count - 1) {
                     *frame = 0;
                 } else {
                     uint64_t pos = i + 1;
 
-                    while(pos < boot_params.map.count && boot_params.map.entries[pos].flags != PHYS_NORMAL_MEMORY)
+                    while(pos < boot_params->map.count && boot_params->map.entries[pos].flags != PHYS_NORMAL_MEMORY)
                         pos++;
 
-                    if(pos == boot_params.map.count) {
+                    if(pos == boot_params->map.count) {
                         *frame = 0;
                     } else {
-                        *frame = boot_params.map.entries[pos].phys_addr;
+                        *frame = boot_params->map.entries[pos].phys_addr;
                     }
                 }
             } else {
