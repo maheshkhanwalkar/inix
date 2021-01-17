@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <inix/elf.h>
+#include <mm/vm.h>
 #include <arch/x86_64/boot/params.h>
 #include <arch/x86_64/efi/memory.h>
 #include <arch/x86_64/mm/pml4.h>
@@ -17,6 +18,11 @@ typedef struct mem_map {
     unsigned long count;
     efi_memory_entry_t* map;
 } mem_map_t;
+
+typedef struct memfs {
+    unsigned long phys_start;
+    unsigned long size;
+} memfs_t;
 
 
 // Page table references (see arch/x86_64/mm/pml4.c)
@@ -230,4 +236,21 @@ void copy_memory_map(mem_map_t* mem_map)
         boot_params->map.entries[i].num_bytes = mem_map->map[i].num_pages * PAGE_SIZE;
         boot_params->map.entries[i].flags = convert_flags(mem_map->map[i].type);
     }
+}
+
+void map_memfs(const memfs_t* memfs)
+{
+    // No memfs image loaded into memory -- do nothing
+    if(memfs->size == 0) {
+        return;
+    }
+
+    uint64_t pages = DIV_UP(memfs->size, VM_PAGE_SIZE);
+    uint64_t start = vm_carve(pages);
+
+    boot_params_t* boot_params = get_boot_params();
+    boot_params->memfs = (memfs_loc_t) {
+            .v_start = start,
+            .size = memfs->size
+    };
 }

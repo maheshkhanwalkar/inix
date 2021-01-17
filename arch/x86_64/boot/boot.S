@@ -22,8 +22,14 @@ _prep_efi_args:
     movq %r9, %rdx
     movq %cr3, %rcx
 
-    # Save kernel base and memory map on the stack
+    # Adjust the stack to get the 5th parameter
+    # RSP -> [Return Address, RCX, RDX, R8, R9, 5th Parameter]
+    addq $0x28, %rsp
+    popq %r8
+
+    # Save kernel base, memfs location and memory map on the stack
     pushq %rdi
+    pushq %r8
     pushq %rdx
 
     # Perform some prep work to put the kernel in a good state
@@ -33,6 +39,10 @@ _prep_efi_args:
     # Copy the memory map
     popq %rdi
     callq copy_memory_map
+
+    # Setup the memfs
+    popq %rdi
+    callq map_memfs
 
     # Compute higher-half address
     movq $0xFFFFFFFF80000000, %rax
