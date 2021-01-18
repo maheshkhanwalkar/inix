@@ -1,12 +1,14 @@
 #include <inix/mm/alloc.h>
 #include <inix/mm/phys.h>
 #include <inix/mm/vm.h>
-
 #include <inix/defs.h>
 #include <inix/mm/paging.h>
 
+#include <mm/alloc/page.h>
+
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 static const ptr_t VM_INITIAL_BUFFER = 0x8000;
 static const ptr_t VM_CHECKSUM = 0xDEAD;
@@ -22,7 +24,8 @@ typedef struct free_list_hdr {
     // Entry footer
     struct free_list_ftr* footer;
 
-    // Size and checksum information
+    // Metadata
+    bool free;
     ptr_t size;
     ptr_t checksum;
 } free_list_hdr_t;
@@ -101,6 +104,7 @@ static ptr_t compute_pad(ptr_t amt)
 
 void vm_init(void)
 {
+    // Create initial pool of memory
     ptr_t pages = DIV_UP(VM_INITIAL_BUFFER, VM_PAGE_SIZE);
     free_list_t* next = allocate(pages);
 
@@ -110,6 +114,9 @@ void vm_init(void)
 
     free_head.size = 0;
     free_head.next = next;
+
+    // Initialise paging subcomponent
+    vm_page_init();
 }
 
 void* vm_alloc(ptr_t amt)

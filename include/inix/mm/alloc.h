@@ -1,6 +1,9 @@
 #pragma once
 #include <inix/defs.h>
 
+/**
+ * Initialise the VM allocator subsystem
+ */
 void vm_init(void);
 
 /**
@@ -28,3 +31,16 @@ void vm_free(void* ptr);
  * may be reused by other kernel subsystems.
  */
 void vm_donate(void* ptr, ptr_t amt);
+
+/**
+ * Allocate a page from the kernel heap
+ *
+ * This allocation, when it succeeds, returns a memory block that is page-aligned and
+ * exactly the size of a page.
+ */
+void* vm_page_alloc(void);
+
+/**
+ * Free a page back to the kernel heap
+ */
+void vm_page_free(void* ptr);
