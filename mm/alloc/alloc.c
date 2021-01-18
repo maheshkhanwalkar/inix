@@ -8,8 +8,30 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define VM_INITIAL_BUFFER 0x8000
-#define VM_CHECKSUM 0xDEAD
+static const ptr_t VM_INITIAL_BUFFER = 0x8000;
+static const ptr_t VM_CHECKSUM = 0xDEAD;
+
+struct free_list_hdr;
+struct free_list_ftr;
+
+typedef struct free_list_hdr {
+    // Doubly-linked
+    struct free_list_hdr* next;
+    struct free_list_hdr* prev;
+
+    // Entry footer
+    struct free_list_ftr* footer;
+
+    // Size and checksum information
+    ptr_t size;
+    ptr_t checksum;
+} free_list_hdr_t;
+
+typedef struct free_list_ftr {
+    // Entry header and checksum
+    struct free_list_hdr* header;
+    ptr_t checksum;
+} free_list_ftr_t;
 
 typedef struct free_list {
     ptr_t size;
@@ -27,7 +49,7 @@ static void* allocate(ptr_t pages)
         panic("exhausted virtual address space");
     }
 
-    for(uintptr_t i = 0; i < pages; i++) {
+    for(ptr_t i = 0; i < pages; i++) {
         uint32_t flags = VM_PG_PRESENT | VM_PG_WRITE;
 
         ptr_t phys = phys_allocate_frame();
