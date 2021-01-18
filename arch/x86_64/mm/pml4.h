@@ -13,3 +13,4 @@
 
 void pml4_map_page(uint64_t v_addr, uint64_t phys_addr, unsigned long flags);
 uint64_t pml4_translate(uint64_t v_addr);
+void pml4_unmap_page(uint64_t v_addr);

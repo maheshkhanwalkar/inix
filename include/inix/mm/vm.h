@@ -30,3 +30,11 @@ void vm_invlpg(ptr_t v_addr);
  * Translate a virtual address to a physical address
  */
 ptr_t vm_translate(ptr_t v_addr);
+
+/**
+ * Unmap the given virtual address
+ *
+ * When the virtual address is not associated with anything, then the
+ * call becomes a no-op.
+ */
+void vm_unmap_page(ptr_t v_addr);

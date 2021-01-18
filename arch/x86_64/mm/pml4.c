@@ -92,3 +92,37 @@ uint64_t pml4_translate(uint64_t v_addr)
 
     return phys_addr;
 }
+
+void pml4_unmap_page(uint64_t v_addr)
+{
+    unsigned int pml4_pos = PML4_INDEX(v_addr);
+    unsigned int pdpt_pos = PDPT_INDEX(v_addr);
+    unsigned int pd_pos   = PD_INDEX(v_addr);
+    unsigned int pt_pos   = PT_INDEX(v_addr);
+
+    uint64_t *pdpt_table, *pd_table, *pt_table;
+
+    // Traverse the paging structure -- checking whether the page is actually
+    // mapped in the first place (otherwise, ignore)
+    if(!(pdpt_table = get_table(pml4e, pml4_pos, false)))
+        return;
+
+    if(!(pd_table = get_table(pdpt_table, pdpt_pos, false))) {
+        scratch_unmap(pdpt_table);
+        return;
+    }
+
+    if(!(pt_table = get_table(pd_table, pd_pos, false))) {
+        scratch_unmap(pdpt_table);
+        scratch_unmap(pd_table);
+        return;
+    }
+
+    pt_table[pt_pos] = 0;
+    _invlpg(v_addr);
+
+    // Unmap the tables
+    scratch_unmap(pdpt_table);
+    scratch_unmap(pd_table);
+    scratch_unmap(pt_table);
+}

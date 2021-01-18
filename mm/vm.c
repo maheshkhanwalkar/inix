@@ -5,6 +5,7 @@ extern ptr_t arch_vm_carve(ptr_t pages);
 extern void arch_vm_map_page(ptr_t v_addr, ptr_t phys_addr, uint32_t flags);
 extern void arch_vm_invlpg(ptr_t v_addr);
 extern ptr_t arch_vm_translate(ptr_t v_addr);
+extern void arch_vm_unmap_page(ptr_t v_addr);
 
 ptr_t vm_carve(ptr_t pages)
 {
@@ -24,4 +25,9 @@ void vm_invlpg(ptr_t v_addr)
 ptr_t vm_translate(ptr_t v_addr)
 {
     return arch_vm_translate(v_addr);
+}
+
+void vm_unmap_page(ptr_t v_addr)
+{
+    arch_vm_unmap_page(v_addr);
 }

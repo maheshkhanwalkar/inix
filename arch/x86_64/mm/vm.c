@@ -53,3 +53,8 @@ uint64_t arch_vm_translate(uint64_t v_addr)
 {
     return pml4_translate(v_addr);
 }
+
+void arch_vm_unmap_page(uint64_t v_addr)
+{
+    pml4_unmap_page(v_addr);
+}
