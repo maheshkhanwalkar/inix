@@ -1,20 +1,45 @@
-#include <mm/alloc.h>
+#include <inix/mm/alloc.h>
 #include <inix/mm/phys.h>
-#include <mm/vm.h>
-
+#include <inix/mm/vm.h>
 #include <inix/defs.h>
 #include <inix/mm/paging.h>
 
+#include <mm/alloc/page.h>
+
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
-#define VM_INITIAL_BUFFER 0x8000
-#define VM_CHECKSUM 0xDEAD
+static const ptr_t VM_INITIAL_BUFFER = 0x8000;
+static const ptr_t VM_CHECKSUM = 0xDEAD;
+
+struct free_list_hdr;
+struct free_list_ftr;
+
+typedef struct free_list_hdr {
+    // Doubly-linked
+    struct free_list_hdr* next;
+    struct free_list_hdr* prev;
+
+    // Entry footer
+    struct free_list_ftr* footer;
+
+    // Metadata
+    bool free;
+    ptr_t size;
+    ptr_t checksum;
+} free_list_hdr_t;
+
+typedef struct free_list_ftr {
+    // Entry header and checksum
+    struct free_list_hdr* header;
+    ptr_t checksum;
+} free_list_ftr_t;
 
 typedef struct free_list {
-    uintptr_t size;
+    ptr_t size;
     struct free_list* next;
-    uintptr_t checksum;
+    ptr_t checksum;
 } free_list_t;
 
 static free_list_t free_head;
@@ -27,7 +52,7 @@ static void* allocate(ptr_t pages)
         panic("exhausted virtual address space");
     }
 
-    for(uintptr_t i = 0; i < pages; i++) {
+    for(ptr_t i = 0; i < pages; i++) {
         uint32_t flags = VM_PG_PRESENT | VM_PG_WRITE;
 
         ptr_t phys = phys_allocate_frame();
@@ -71,14 +96,15 @@ static void* create_entry(ptr_t actual, free_list_t* after)
     }
 }
 
-static ptr_t compute_pad(uintptr_t amt)
+static ptr_t compute_pad(ptr_t amt)
 {
-    uintptr_t ptr_size = sizeof(uintptr_t);
+    ptr_t ptr_size = sizeof(ptr_size);
     return ptr_size - (amt & (ptr_size - 1));
 }
 
 void vm_init(void)
 {
+    // Create initial pool of memory
     ptr_t pages = DIV_UP(VM_INITIAL_BUFFER, VM_PAGE_SIZE);
     free_list_t* next = allocate(pages);
 
@@ -88,9 +114,12 @@ void vm_init(void)
 
     free_head.size = 0;
     free_head.next = next;
+
+    // Initialise paging subcomponent
+    vm_page_init();
 }
 
-void* vm_alloc(uintptr_t amt)
+void* vm_alloc(ptr_t amt)
 {
     ptr_t actual = amt + sizeof(free_list_t) + compute_pad(amt);
 
@@ -143,6 +172,21 @@ void vm_free(void* ptr)
         panic("heap corruption");
     }
 
+    meta->next = free_head.next;
+    free_head.next = meta;
+}
+
+void vm_donate(void* ptr, ptr_t amt)
+{
+    // Either not valid or sadly not enough space -- in either case, just simply
+    // ignore the donation request because it is of no use...
+    if(!ptr || amt <= sizeof(free_list_t))
+        return;
+
+    free_list_t* meta = (free_list_t*)ptr;
+
+    meta->size = amt;
+    meta->checksum = VM_CHECKSUM;
     meta->next = free_head.next;
     free_head.next = meta;
 }

@@ -3,7 +3,7 @@
 #include <arch/x86_64/mm/pml4.h>
 #include <arch/x86_64/mm/invlpg.h>
 
-#include <mm/vm.h>
+#include <inix/mm/vm.h>
 #include <stdint.h>
 
 #include <inix/mm/paging.h>
@@ -37,6 +37,8 @@ void arch_vm_map_page(uint64_t v_addr, uint64_t phys_addr, uint32_t flags)
         arch_flags |= PG_PRESENT;
     if(flags & VM_PG_WRITE)
         arch_flags |= PG_WRITE;
+    if(flags & VM_PG_USER)
+        arch_flags |= PG_USER;
     if(!(flags & VM_PG_EXECUTE))
         arch_flags |= PG_NO_EXECUTE;
 
@@ -46,4 +48,14 @@ void arch_vm_map_page(uint64_t v_addr, uint64_t phys_addr, uint32_t flags)
 void arch_vm_invlpg(uint64_t v_addr)
 {
     _invlpg(v_addr);
+}
+
+uint64_t arch_vm_translate(uint64_t v_addr)
+{
+    return pml4_translate(v_addr);
+}
+
+void arch_vm_unmap_page(uint64_t v_addr)
+{
+    pml4_unmap_page(v_addr);
 }
