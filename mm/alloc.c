@@ -1,4 +1,4 @@
-#include <mm/alloc.h>
+#include <inix/mm/alloc.h>
 #include <inix/mm/phys.h>
 #include <inix/mm/vm.h>
 
@@ -12,9 +12,9 @@
 #define VM_CHECKSUM 0xDEAD
 
 typedef struct free_list {
-    uintptr_t size;
+    ptr_t size;
     struct free_list* next;
-    uintptr_t checksum;
+    ptr_t checksum;
 } free_list_t;
 
 static free_list_t free_head;
@@ -71,9 +71,9 @@ static void* create_entry(ptr_t actual, free_list_t* after)
     }
 }
 
-static ptr_t compute_pad(uintptr_t amt)
+static ptr_t compute_pad(ptr_t amt)
 {
-    uintptr_t ptr_size = sizeof(uintptr_t);
+    ptr_t ptr_size = sizeof(ptr_size);
     return ptr_size - (amt & (ptr_size - 1));
 }
 
@@ -90,7 +90,7 @@ void vm_init(void)
     free_head.next = next;
 }
 
-void* vm_alloc(uintptr_t amt)
+void* vm_alloc(ptr_t amt)
 {
     ptr_t actual = amt + sizeof(free_list_t) + compute_pad(amt);
 
@@ -143,6 +143,21 @@ void vm_free(void* ptr)
         panic("heap corruption");
     }
 
+    meta->next = free_head.next;
+    free_head.next = meta;
+}
+
+void vm_donate(void* ptr, ptr_t amt)
+{
+    // Either not valid or sadly not enough space -- in either case, just simply
+    // ignore the donation request because it is of no use...
+    if(!ptr || amt <= sizeof(free_list_t))
+        return;
+
+    free_list_t* meta = (free_list_t*)ptr;
+
+    meta->size = amt;
+    meta->checksum = VM_CHECKSUM;
     meta->next = free_head.next;
     free_head.next = meta;
 }

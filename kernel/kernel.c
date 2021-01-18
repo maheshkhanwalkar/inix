@@ -1,4 +1,4 @@
-#include <mm/alloc.h>
+#include <inix/mm/alloc.h>
 #include <inix/irq.h>
 
 void kernel_main(void)
