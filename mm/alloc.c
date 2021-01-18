@@ -1,6 +1,6 @@
 #include <mm/alloc.h>
 #include <inix/mm/phys.h>
-#include <mm/vm.h>
+#include <inix/mm/vm.h>
 
 #include <inix/defs.h>
 #include <inix/mm/paging.h>

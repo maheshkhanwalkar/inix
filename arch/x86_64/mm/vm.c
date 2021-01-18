@@ -3,7 +3,7 @@
 #include <arch/x86_64/mm/pml4.h>
 #include <arch/x86_64/mm/invlpg.h>
 
-#include <mm/vm.h>
+#include <inix/mm/vm.h>
 #include <stdint.h>
 
 #include <inix/mm/paging.h>
@@ -45,4 +45,9 @@ void arch_vm_map_page(uint64_t v_addr, uint64_t phys_addr, uint32_t flags)
 void arch_vm_invlpg(uint64_t v_addr)
 {
     _invlpg(v_addr);
+}
+
+uint64_t arch_vm_translate(uint64_t v_addr)
+{
+    return pml4_translate(v_addr);
 }
