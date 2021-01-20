@@ -1,5 +1,6 @@
 #pragma once
 #include <inix/defs.h>
+#include <stdbool.h>
 
 #define VM_PG_PRESENT 0x1
 #define VM_PG_WRITE   0x2
@@ -38,3 +39,9 @@ ptr_t vm_translate(ptr_t v_addr);
  * call becomes a no-op.
  */
 void vm_unmap_page(ptr_t v_addr);
+
+/**
+ * Check whether there exists a present page entry within the paging structure
+ * for the given virtual address
+ */
+bool vm_has_mapping(ptr_t v_addr);

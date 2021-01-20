@@ -31,3 +31,8 @@ void vm_unmap_page(ptr_t v_addr)
 {
     arch_vm_unmap_page(v_addr);
 }
+
+bool vm_has_mapping(ptr_t v_addr)
+{
+    return vm_translate(v_addr) != 0;
+}
