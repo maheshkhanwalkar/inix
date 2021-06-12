@@ -3,10 +3,7 @@
 
 #include <inix/defs.h>
 #include <inix/mm/scratch.h>
-#include <inix/mm/type.h>
 #include <inix/mm/paging.h>
-
-#include <stddef.h>
 
 // Frame stack pointer
 static ptr_t stack_top;

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(vminix C ASM)
+project(vminix C CXX ASM)
 
 #-----------------------------------------------------------------------------#
 # Build configuration                                                         #
@@ -12,8 +12,12 @@ set(CONFIG_BUILD_ARCH "hosted" CACHE STRING "Target architecture")
 # Compiler flags                                                              #
 #-----------------------------------------------------------------------------#
 
-set(ADDITIONAL_C_FLAGS "-O0 -g -Wall -Wextra -pedantic -ffreestanding -Wshadow \
+set(ADDITIONAL_C_FLAGS "-O0 -g -Wall -Wextra -pedantic -Wshadow \
     -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wsign-conversion")
+
+if(NOT CONFIG_BUILD_ARCH STREQUAL "hosted")
+    set(ADDITIONAL_C_FLAGS "${ADDITIONAL_C_FLAGS} -ffreestanding")
+endif()
 
 if(CONFIG_BUILD_ARCH STREQUAL "x86_64")
     set(ARCH_C_FLAGS "-target x86_64-linux-elf -fPIE -mno-sse -mno-sse2 -mno-mmx -mno-3dnow")
@@ -34,10 +38,13 @@ endif()
 enable_language(ASM-ATT)
 
 set(CMAKE_C_COMPILER clang)
+set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_ASM_COMPILER "${CMAKE_C_COMPILER}")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ADDITIONAL_C_FLAGS} ${ARCH_C_FLAGS}")
+set(CMAKE_CXX_FLAGS  "-Wall -Wextra")
 set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 
 if(NOT CONFIG_BUILD_ARCH STREQUAL "hosted")
