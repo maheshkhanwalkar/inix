@@ -1,2 +1,2 @@
-set(SOURCES boot/boot.c mm/phys.cpp)
+set(SOURCES boot/boot.c mm/phys.c)
 add_library(hosted OBJECT ${SOURCES})
