@@ -9,3 +9,5 @@ tools/
 # CLion config
 .idea/
 
+# Object output
+*.o
