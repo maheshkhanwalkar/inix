@@ -1,0 +1,3 @@
+[submodule "sys/Kbuild"]
+	path = sys/Kbuild
+	url = https://github.com/maheshkhanwalkar/Kbuild.git
