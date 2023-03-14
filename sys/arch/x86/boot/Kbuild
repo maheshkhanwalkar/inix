@@ -1,0 +1,2 @@
+src-${CONFIG_BOOT_EFI} += efi/
+src-y += params.c
