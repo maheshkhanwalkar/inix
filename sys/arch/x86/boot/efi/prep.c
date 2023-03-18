@@ -19,7 +19,7 @@ typedef struct mem_map {
 } mem_map_t;
 
 
-// Page table references (see arch/x86_64/mm/pml4.c)
+// Page table references (see arch/x86/mm/pml4.c)
 extern uint64_t pml4e[PT_NUM_ENTRIES];
 
 static uint64_t pdpt[PT_NUM_ENTRIES]__attribute__((aligned(PAGE_SIZE)));
@@ -197,7 +197,7 @@ static void setup_stack(mem_map_t* mem_map)
  *
  * The state is currently identity mapping, which is not ideal. This function sets up
  * the kernel's own page tables and moves itself to the higher half. The actual magic
- * of fixing the instruction pointer is done back in boot/boot.S
+ * of fixing the instruction pointer is done back in arch/x86/boot/efi/boot.S
  */
 void* low_level_prep(unsigned long kern_base, kern_img_t* kern_img, mem_map_t* mem_map, const uint64_t* prev_pml4)
 {
@@ -219,7 +219,7 @@ void* low_level_prep(unsigned long kern_base, kern_img_t* kern_img, mem_map_t* m
  * mem_map->map address is in the lower half. This function is called after the new page
  * tables have come into effect, but before the lower half is unmapped.
  *
- * See arch/x86_64/boot/boot.S for additional context
+ * See arch/x86/boot/efi/boot.S for additional context
  */
 void copy_memory_map(mem_map_t* mem_map)
 {
