@@ -1,0 +1,18 @@
+[package]
+name = "inix"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "inix"
+test = false
+bench = false
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[build-dependencies]
+cc = "1.2.41"
